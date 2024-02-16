@@ -19,6 +19,14 @@ taskbarHeight = 48;
 topbarHeight = 24;
 topbarButtonWidth = 24;
 
+resizingWindow = false;
+resizeStartX = 0;
+resizeStartY = 0;
+resizeStartWidth = 0;
+resizeStartHeight = 0;
+resizeActiveProgram = null;
+resizeDirection = "";
+
 var mouseX = 0;
 var mouseY = 0;
 
@@ -147,12 +155,13 @@ class Topbar extends Label{
 }
 
 class Program{
-    constructor(name,icon){
+    constructor(name,icon,resizable){
         this.name = name;
         this.width = 500;
         this.height = 328;
         this.x = canvas.width / 2 - this.width / 2;
         this.y = canvas.height / 2 - this.height / 2;
+        this.resizable = resizable
         this.minimized = false;
         this.preMinimizedPosX = 0
         this.preMinimizedPosY = 0
@@ -229,6 +238,9 @@ class Program{
         this.components.push(component);
     }
     resize(width,height){
+        if (width == this.width && height == this.height){
+            return;
+        }
         this.width = width;
         this.height = height;
         this.addTopbar();
@@ -304,6 +316,20 @@ function update() {
     drawRect(0, canvas.height - taskbarHeight, canvas.width, taskbarHeight, taskbarColor);
     drawSprite(5, canvas.height - taskbarHeight + 4,40,40,homeIcon);
 
+    if (resizingWindow){
+        var differenceX = mouseX - resizeStartX;
+        var differenceY = mouseY - resizeStartY;
+        
+        if (resizeDirection == "ns-resize"){
+            differenceX = 0;
+        }
+        else if (resizeDirection == "ew-resize"){
+            differenceY = 0;
+        }
+
+        resizeActiveProgram.resize(resizeStartWidth + differenceX, resizeStartHeight + differenceY);
+    }
+
     for (let index = 0; index < taskbarPrograms.length; index++) {
         const program = taskbarPrograms[index];
 
@@ -370,9 +396,50 @@ function updateHoveredComponents(){
     }
 }
 
+function getWindowCornerHovered(){
+    // function to return which windows corner is being hovered and which corner
+    // used for resizing of windows
+
+    for (let index = 0; index < programs.length; index++) {
+        const program = programs[index];
+        if (
+            mouseY >= program.y + program.height - 2 &&
+            mouseY < program.y + program.height + 2 &&
+            mouseX >= program.x + program.width - 2 &&
+            mouseX < program.x + program.width + 2
+        ){
+            return ["nwse-resize",program];
+        }
+        else if (
+            mouseY >= program.y - topbarHeight &&
+            mouseY < program.y - topbarHeight + program.height &&
+            mouseX >= program.x + program.width - 2 &&
+            mouseX < program.x + program.width + 2
+        ){
+            return ["ew-resize",program];
+        }
+        else if (
+            mouseY >= program.y + program.height - 2 &&
+            mouseY < program.y + program.height + 2 &&
+            mouseX >= program.x - 2 &&
+            mouseX < program.x + program.width + 2
+        ){
+            return ["ns-resize",program];
+        }
+    }
+    return ["inherit",null];
+}
+
 function handleMouseMove(event){
     mouseX = event.clientX;
     mouseY = event.clientY;
+    if (resizingWindow){
+        canvas.style.cursor = resizeDirection;
+        return;
+    }
+    var cursor = getWindowCornerHovered()[0];
+    
+    canvas.style.cursor = cursor;
     updateHoveredComponents();
 }
 
@@ -471,6 +538,20 @@ function handleMouseDown(event) {
                         }
                     }
                 }
+            } else {
+                // check if a window corner is being clicked, to resize
+                var result = getWindowCornerHovered();
+                if (result[1] != null){
+                    resizingWindow = true;
+                    resizeStartX = mouseX;
+                    resizeStartY = mouseY;
+                    resizeActiveProgram = result[1];
+                    resizeDirection = result[0];
+                    resizeStartWidth = result[1].width;
+                    resizeStartHeight = result[1].height;
+                    selectProgram(result[1]);
+                }
+
             }
         }
     } else if (event.button === 2){
@@ -481,6 +562,19 @@ function handleMouseUp(event) {
     event.preventDefault();
     mouseX = event.clientX;
     mouseY = event.clientY;
+
+    if (resizingWindow){
+        resizingWindow = false;
+        resizeStartX = 0;
+        resizeStartY = 0;
+        resizeActiveProgram = null;
+        resizeDirection = "";
+        resizeStartWidth = 0;
+        resizeStartHeight = 0;
+        
+        return;
+    }
+
     var component = getHoveredComponent();
     if (event.button === 0){
         if (component != null){
