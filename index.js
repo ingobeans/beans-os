@@ -22,6 +22,8 @@ topbarButtonWidth = 24;
 resizingWindow = false;
 resizeStartX = 0;
 resizeStartY = 0;
+resizeStartProgramX = 0;
+resizeStartProgramY = 0;
 resizeStartWidth = 0;
 resizeStartHeight = 0;
 resizeActiveProgram = null;
@@ -159,6 +161,8 @@ class Program{
         this.name = name;
         this.width = 500;
         this.height = 328;
+        this.minWidth = 200;
+        this.minHeight = 128;
         this.x = canvas.width / 2 - this.width / 2;
         this.y = canvas.height / 2 - this.height / 2;
         this.resizable = resizable
@@ -241,6 +245,15 @@ class Program{
         if (width == this.width && height == this.height){
             return;
         }
+        if (width < this.minWidth && height < this.minHeight){
+            return;
+        }
+        if (width < this.minWidth){
+            width = this.minWidth;
+        }
+        else if (height < this.minHeight){
+            height = this.minHeight;
+        }
         this.width = width;
         this.height = height;
         this.addTopbar();
@@ -320,13 +333,31 @@ function update() {
         var differenceX = mouseX - resizeStartX;
         var differenceY = mouseY - resizeStartY;
         
-        if (resizeDirection == "ns-resize"){
+        if (resizeDirection == "s-resize" || resizeDirection == "n-resize"){
             differenceX = 0;
         }
-        else if (resizeDirection == "ew-resize"){
+        else if (resizeDirection == "e-resize" || resizeDirection == "w-resize"){
             differenceY = 0;
         }
 
+        if (resizeDirection == "n-resize" || resizeDirection == "w-resize" || resizeDirection == "nw-resize"){
+            differenceX *= -1;
+            differenceY *= -1;
+
+            offsetX = differenceX;
+            offsetY = differenceY;
+
+            if (resizeActiveProgram.width - resizeActiveProgram.minWidth <= 0){
+                offsetX = (resizeStartWidth - resizeActiveProgram.width)*-1;
+            }
+            if (resizeActiveProgram.height - resizeActiveProgram.minHeight <= 0){
+                offsetY = (resizeStartHeight - resizeActiveProgram.height)*-1;
+            }
+
+            resizeActiveProgram.x = resizeStartProgramX - offsetX;
+            resizeActiveProgram.y = resizeStartProgramY - offsetY;
+        }
+        
         resizeActiveProgram.resize(resizeStartWidth + differenceX, resizeStartHeight + differenceY);
     }
 
@@ -400,6 +431,9 @@ function getWindowCornerHovered(){
     // function to return which windows corner is being hovered and which corner
     // used for resizing of windows
 
+    // please tell me there's a better way to do this
+    // please
+
     for (let index = 0; index < programs.length; index++) {
         const program = programs[index];
         if (
@@ -408,7 +442,7 @@ function getWindowCornerHovered(){
             mouseX >= program.x + program.width - 2 &&
             mouseX < program.x + program.width + 2
         ){
-            return ["nwse-resize",program];
+            return ["se-resize",program];
         }
         else if (
             mouseY >= program.y - topbarHeight &&
@@ -416,7 +450,7 @@ function getWindowCornerHovered(){
             mouseX >= program.x + program.width - 2 &&
             mouseX < program.x + program.width + 2
         ){
-            return ["ew-resize",program];
+            return ["e-resize",program];
         }
         else if (
             mouseY >= program.y + program.height - 2 &&
@@ -424,7 +458,31 @@ function getWindowCornerHovered(){
             mouseX >= program.x - 2 &&
             mouseX < program.x + program.width + 2
         ){
-            return ["ns-resize",program];
+            return ["s-resize",program];
+        }
+        else if (
+            mouseY >= program.y - topbarHeight - 2 &&
+            mouseY < program.y - topbarHeight + 2 &&
+            mouseX >= program.x - 2 &&
+            mouseX < program.x + 2
+        ){
+            return ["nw-resize",program];
+        }
+        else if (
+            mouseY >= program.y - topbarHeight - 2 &&
+            mouseY < program.y - topbarHeight + 2 &&
+            mouseX >= program.x - 2 &&
+            mouseX < program.x + program.width + 2
+        ){
+            return ["n-resize",program];
+        }
+        else if (
+            mouseY >= program.y - topbarHeight &&
+            mouseY < program.y - topbarHeight + program.height &&
+            mouseX >= program.x - 2 &&
+            mouseX < program.x + 2
+        ){
+            return ["w-resize",program];
         }
     }
     return ["inherit",null];
@@ -520,39 +578,39 @@ function handleMouseDown(event) {
     var component = getHoveredComponent();
 
     if (event.button === 0){
-        if (component != null){
-            component.onClick();
-        }else {
-            // this means we press somewhere on the desktop
-            // check for taskbar icon press
+        // this means we press somewhere on the desktop
+        // check for taskbar icon press
 
-            if (mouseY >= canvas.height - taskbarHeight){
-                // mouse in the taskbar area
-                var program = getHoveredTaskbarIcon();
-                if (program != null){
-                    if (program != selectedProgram){
-                        selectProgram(program);
-                        
-                        if (program.minimized){
-                            program.maximize();
-                        }
+        if (mouseY >= canvas.height - taskbarHeight){
+            // mouse in the taskbar area
+            var program = getHoveredTaskbarIcon();
+            if (program != null){
+                if (program != selectedProgram){
+                    selectProgram(program);
+                    
+                    if (program.minimized){
+                        program.maximize();
                     }
                 }
-            } else {
-                // check if a window corner is being clicked, to resize
-                var result = getWindowCornerHovered();
-                if (result[1] != null){
-                    resizingWindow = true;
-                    resizeStartX = mouseX;
-                    resizeStartY = mouseY;
-                    resizeActiveProgram = result[1];
-                    resizeDirection = result[0];
-                    resizeStartWidth = result[1].width;
-                    resizeStartHeight = result[1].height;
-                    selectProgram(result[1]);
-                }
-
             }
+        } else {
+            // check if a window corner is being clicked, to resize
+            var result = getWindowCornerHovered();
+            if (result[1] != null){
+                resizingWindow = true;
+                resizeStartX = mouseX;
+                resizeStartY = mouseY;
+                resizeActiveProgram = result[1];
+                resizeDirection = result[0];
+                resizeStartWidth = result[1].width;
+                resizeStartHeight = result[1].height;
+                resizeStartProgramX = result[1].x;
+                resizeStartProgramY = result[1].y;
+                selectProgram(result[1]);
+            } else if (component != null){
+                component.onClick();
+            }
+
         }
     } else if (event.button === 2){
 
@@ -571,6 +629,8 @@ function handleMouseUp(event) {
         resizeDirection = "";
         resizeStartWidth = 0;
         resizeStartHeight = 0;
+        resizeStartProgramX = 0;
+        resizeStartProgramY = 0;
         
         return;
     }
