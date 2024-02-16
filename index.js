@@ -8,14 +8,16 @@ document.body.style.backgroundColor = wallpaperColor;
 
 windowBackgroundColor = "#9c9c9c";
 windowBarColor = "#6d6d6d";
+windowBorderWith = 1;
 taskbarColor = "#131E16";
 
 homeIcon = new Image();
 homeIcon.src = "assets/home.png"
 
 taskbarHeight = 48;
-windowBarHeight = 24;
-windowBarButtonWidth = 24;
+
+topbarHeight = 24;
+topbarButtonWidth = 24;
 
 var mouseX = 0;
 var mouseY = 0;
@@ -157,9 +159,9 @@ class Program{
         this.components = [];
         
         // components for top bar:
-        this.addComponent(new Button(this.width - windowBarButtonWidth * 2, -windowBarHeight, windowBarButtonWidth, windowBarHeight, this.minimize, windowBarColor," -"));
-        this.addComponent(new Button(this.width - windowBarButtonWidth, -windowBarHeight, windowBarButtonWidth, windowBarHeight, this.exit, "#ff0000"," X"));
-        this.addComponent(new Topbar(0, -windowBarHeight, this.width, windowBarHeight, "#ffffff", windowBarColor, this.name));
+        this.addComponent(new Button(this.width - topbarButtonWidth * 2, -topbarHeight, topbarButtonWidth, topbarHeight, this.minimize, windowBarColor," -"));
+        this.addComponent(new Button(this.width - topbarButtonWidth, -topbarHeight, topbarButtonWidth, topbarHeight, this.exit, "#ff0000"," X"));
+        this.addComponent(new Topbar(0, -topbarHeight, this.width, topbarHeight, "#ffffff", windowBarColor, this.name));
 
         this.iconSrc = icon;
         this.icon = new Image();
@@ -220,6 +222,7 @@ class Program{
         this.y = y;
     }
     draw(){
+        this.drawRect(- windowBorderWith, - windowBorderWith - topbarHeight, this.width + windowBorderWith * 2, this.height + windowBorderWith * 2 + topbarHeight, "#000000");
         this.drawRect(0, 0, this.width, this.height, windowBackgroundColor);
 
         for (let index = this.components.length - 1; index >= 0; index--) {
@@ -372,7 +375,7 @@ function getHoveredProgram(){
         if (
             mouseX >= program.x &&
             mouseX < program.x + program.width &&
-            mouseY >= program.y - windowBarHeight &&
+            mouseY >= program.y - topbarHeight &&
             mouseY < program.y + program.height
         ){
             return program;
