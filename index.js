@@ -209,6 +209,8 @@ class Program{
         this.parent.y = canvas.height * 2;
         selectedProgram = null;
         this.parent.minimized = true;
+
+        updateHoveredComponents();
     }
     drawRect(x, y, width, height, color){
         drawRect(x + this.x, y + this.y, width, height, color);
