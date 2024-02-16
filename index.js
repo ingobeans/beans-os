@@ -22,6 +22,12 @@ class Component{
         this.width = width;
         this.height = height;
         this.color = color;
+
+        this.onHoverEvent = null;
+        this.onExitHoverEvent = null;
+        this.onClickEvent = null;
+        this.onReleaseEvent = null;
+
         this.hoverLast = false;
         this.parent = null;
     }
@@ -29,22 +35,30 @@ class Component{
 
     }
     onHover(){
-        
+        if(this.onHoverEvent != null){
+            this.onHoverEvent();
+        }
     }
     exitHover(){
-        
+        if(this.onExitHoverEvent != null){
+            this.onExitHoverEvent();
+        }
     }
     onRelease(){
-        
+        if(this.onReleaseEvent != null){
+            this.onReleaseEvent();
+        }
     }
     onClick(){
-        
+        if(this.onClickEvent != null){
+            this.onClickEvent();
+        }
     }
 }
 
 class Button extends Component{
     constructor(x, y, width, height, onClickEvent, color, text) {
-        super(x,y,width,height,color);
+        super(x, y, width, height, color);
         this.onClickEvent = onClickEvent;
         this.text = text;
     }
@@ -53,11 +67,6 @@ class Button extends Component{
     }
     exitHover(){
         canvas.style.cursor = "inherit";
-    }
-    onClick(){
-        if (this.onClickEvent != null){
-            this.onClickEvent();
-        }
     }
     draw(offsetX, offsetY){
         drawRect(this.x + offsetX, this.y + offsetY, this.width, this.height, this.color);
