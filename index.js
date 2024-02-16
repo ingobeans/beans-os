@@ -298,11 +298,6 @@ function update() {
     drawRect(0, canvas.height - taskbarHeight, canvas.width, taskbarHeight, taskbarColor);
     drawSprite(5, canvas.height - taskbarHeight + 4,40,40,homeIcon);
 
-    for (let index = programs.length - 1; index >= 0; index--) {
-        const program = programs[index];
-        program.draw();
-    }
-
     for (let index = 0; index < taskbarPrograms.length; index++) {
         const program = taskbarPrograms[index];
 
@@ -311,6 +306,11 @@ function update() {
         if (selectedProgram == program){
             drawRect(index * 60 + 65, canvas.height - taskbarHeight + 4, 8, 8, "#ff0000")
         }
+    }
+
+    for (let index = programs.length - 1; index >= 0; index--) {
+        const program = programs[index];
+        program.draw();
     }
     
     if (selectedProgram != null){
@@ -429,6 +429,7 @@ function selectProgram(program){
 }
 
 function handleMouseDown(event) {
+    event.preventDefault();
     mouseX = event.clientX;
     mouseY = event.clientY;
 
@@ -467,6 +468,7 @@ function handleMouseDown(event) {
     }
 }
 function handleMouseUp(event) {
+    event.preventDefault();
     mouseX = event.clientX;
     mouseY = event.clientY;
     var component = getHoveredComponent();
