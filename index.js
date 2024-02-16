@@ -34,6 +34,9 @@ class Component{
     draw(offsetX, offsetY){
 
     }
+    update(){
+
+    }
     onHover(){
         if(this.onHoverEvent != null){
             this.onHoverEvent();
@@ -87,11 +90,50 @@ class Label extends Component{
     constructor(x, y, width, height, textColor, backgroundColor, text){
         super(x,y,width,height,textColor);
         this.backgroundColor = backgroundColor;
-        this.text = text
+        this.text = text;
     }
     draw(offsetX, offsetY){
         drawRect(this.x + offsetX, this.y + offsetY, this.width, this.height, this.backgroundColor);
-        drawText(this.x + offsetX, this.y + offsetY, this.text, this.color)
+        drawText(this.x + offsetX, this.y + offsetY, this.text, this.color);
+    }
+}
+
+class Topbar extends Label{
+    // a regular label but has mouse events to allow dragging the window
+    constructor(x, y, width, height, textColor, backgroundColor, text){
+        super(x,y,width,height,textColor);
+        this.backgroundColor = backgroundColor;
+        this.text = text;
+
+        this.pressing = false;
+        this.startPressMouseX = 0;
+        this.startPressMouseY = 0;
+        this.startPressWindowX = 0;
+        this.startPressWindowY = 0;
+    }
+    draw(offsetX, offsetY){
+        drawRect(this.x + offsetX, this.y + offsetY, this.width, this.height, this.backgroundColor);
+        drawText(this.x + offsetX, this.y + offsetY, this.text, this.color);
+    }
+    update(){
+        if (this.pressing){
+            this.parent.x = mouseX - this.startPressMouseX + this.startPressWindowX;
+            this.parent.y = mouseY - this.startPressMouseY + this.startPressWindowY;
+        }
+    }
+    onClick(){
+        this.pressing = true;
+        this.startPressMouseX = mouseX;
+        this.startPressMouseY = mouseY;
+        this.startPressWindowX = this.parent.x;
+        this.startPressWindowY = this.parent.y;
+    }
+    onRelease(){
+        this.pressing = false;
+        this.startPressMouseX = 0;
+        this.startPressMouseY = 0;
+        this.startPressWindowX = 0;
+        this.startPressWindowY = 0;
     }
 }
 
@@ -107,7 +149,7 @@ class Program{
         // components for top bar:
         this.addComponent(new Button(this.width - windowBarButtonWidth * 2, -windowBarHeight, windowBarButtonWidth, windowBarHeight, this.minimize, windowBarColor," -"));
         this.addComponent(new Button(this.width - windowBarButtonWidth, -windowBarHeight, windowBarButtonWidth, windowBarHeight, this.exit, "#ff0000"," X"));
-        this.addComponent(new Label(0, -windowBarHeight, this.width, windowBarHeight, "#ffffff", windowBarColor, this.name));
+        this.addComponent(new Topbar(0, -windowBarHeight, this.width, windowBarHeight, "#ffffff", windowBarColor, this.name));
     }
     exit(){
         for (let index = this.parent.components.length - 1; index >= 0; index--) {
@@ -118,6 +160,10 @@ class Program{
         programs.splice(programs.indexOf(this.parent,1));
     }
     minimize(){
+        for (let index = this.parent.components.length - 1; index >= 0; index--) {
+            const component = this.parent.components[index];
+            component.exitHover();
+        }
         this.parent.y = canvas.height * 2;
         selectedProgram = null;
     }
@@ -133,7 +179,10 @@ class Program{
         this.components.push(component);
     }
     update(){
-        
+        for (let index = this.components.length - 1; index >= 0; index--) {
+            const component = this.components[index];
+            component.update();
+        }
     }
     moveTo(x, y){
         this.x = x;
@@ -158,9 +207,13 @@ class TestApp extends Program{
         this.loadComponents();
     }
     testButton(){
-        console.log("hi");
+        this.parent.presses += 1;
+        this.parent.textLabel.text = "Presses: " + this.parent.presses.toString();
     }
     loadComponents(){
+        this.textLabel = new Label(0,80,90,40,"#ffffff",windowBackgroundColor,"Presses: 0");
+        this.presses = 0;
+        this.addComponent(this.textLabel);
         this.addComponent(new Button(0,0,40,40,this.testButton,"#333333","Test"))
     }
     onOpen(){
@@ -170,7 +223,7 @@ class TestApp extends Program{
 
 var allPrograms = [new TestApp()]
 var programs = allPrograms
-var selectedProgram = null;
+var selectedProgram = programs[0];
 
 function update() {
     clearScreen(wallpaperColor);
