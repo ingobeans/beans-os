@@ -190,6 +190,8 @@ class Program{
 
         programs.splice(programs.indexOf(this.parent),1);
         taskbarPrograms.splice(taskbarPrograms.indexOf(this.parent),1);
+
+        updateHoveredComponents();
     }
     maximize(){
         this.minimized = false;
@@ -340,9 +342,7 @@ function drawSprite(x, y, width, height, image) {
     ctx.drawImage(image, x, y, width, height);
 }
 
-function handleMouseMove(event){
-    mouseX = event.clientX;
-    mouseY = event.clientY;
+function updateHoveredComponents(){
     for (let index = 0; index < programs.length; index++) {
         const program = programs[index];
         for (let index = 0; index < program.components.length; index++) {
@@ -364,6 +364,12 @@ function handleMouseMove(event){
             }
         }
     }
+}
+
+function handleMouseMove(event){
+    mouseX = event.clientX;
+    mouseY = event.clientY;
+    updateHoveredComponents();
 }
 
 function getHoveredComponent(){
