@@ -3,10 +3,14 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-wallpaperColor = "#640d95";
+wallpaperColor = "#20873F";
+document.body.style.backgroundColor = wallpaperColor;
 
 windowBackgroundColor = "#9c9c9c";
 windowBarColor = "#6d6d6d";
+taskbarColor = "#131E16";
+
+taskbarHeight = 48;
 windowBarHeight = 24;
 windowBarButtonWidth = 24;
 
@@ -204,36 +208,45 @@ class Program{
 class TestApp extends Program{
     constructor(){
         super("Testing App");
-        this.loadComponents();
+        this.onOpen();
     }
     testButton(){
         this.parent.presses += 1;
         this.parent.textLabel.text = "Presses: " + this.parent.presses.toString();
     }
-    loadComponents(){
-        this.textLabel = new Label(0,80,90,40,"#ffffff",windowBackgroundColor,"Presses: 0");
-        this.presses = 0;
-        this.addComponent(this.textLabel);
-        this.addComponent(new Button(0,0,40,40,this.testButton,"#333333","Test"))
+    update(){
+        super.update();
+        this.wa += 1;
+        this.textLabel2.text = "Wa: " + this.wa.toString();
     }
     onOpen(){
-
+        this.textLabel = new Label(0,80,90,40,"#ffffff",windowBackgroundColor,"Presses: 0");
+        this.textLabel2 = new Label(0,160,90,40,"#ffffff",windowBackgroundColor,"Wa: 0");
+        this.presses = 0;
+        this.wa = 0;
+        this.addComponent(this.textLabel);
+        this.addComponent(this.textLabel2);
+        this.addComponent(new Button(0,0,40,40,this.testButton,"#333333","Test"))
     }
 }
 
-var allPrograms = [new TestApp()]
-var programs = allPrograms
+var allPrograms = [new TestApp()];
+var programs = allPrograms;
 var selectedProgram = programs[0];
 
 function update() {
     clearScreen(wallpaperColor);
+    drawRect(0, canvas.height - taskbarHeight, canvas.width, taskbarHeight, taskbarColor)
+
     for (let index = 0; index < programs.length; index++) {
         const program = programs[index];
         program.draw();
     }
     if (selectedProgram != null){
         selectedProgram.update();
+        drawText(20,20,selectedProgram.name,"#ffffff"); // for debug, write the name of the selected program
     }
+    
     requestAnimationFrame(update);
 }
 
@@ -279,29 +292,48 @@ function handleMouseMove(event){
 }
 
 function getHoveredComponent(){
-    for (let index = 0; index < programs.length; index++) {
-        const program = programs[index];
-        for (let index = 0; index < program.components.length; index++) {
-            const component = program.components[index];
-            let x = component.x + program.x;
-            let y = component.y + program.y;
+    if (selectedProgram == null){
+        return null;
+    }
+    for (let index = 0; index < selectedProgram.components.length; index++) {
+        const component = selectedProgram.components[index];
+        let x = component.x + selectedProgram.x;
+        let y = component.y + selectedProgram.y;
 
-            if (
-                mouseX >= x &&
-                mouseX < x+component.width &&
-                mouseY >= y &&
-                mouseY < y+component.height
-            ){
-                return component;
-            }
+        if (
+            mouseX >= x &&
+            mouseX < x+component.width &&
+            mouseY >= y &&
+            mouseY < y+component.height
+        ){
+            return component;
         }
     }
+}
+
+function getHoveredProgram(){
+    for (let index = 0; index < programs.length; index++) {
+        const program = programs[index];
+        if (
+            mouseX >= program.x &&
+            mouseX < program.x + program.width &&
+            mouseY >= program.y - windowBarHeight &&
+            mouseY < program.y + program.height
+        ){
+            return program;
+        }
+    }
+    return null;
 }
 
 function handleMouseDown(event) {
     mouseX = event.clientX;
     mouseY = event.clientY;
+
+    selectedProgram = getHoveredProgram();
+
     var component = getHoveredComponent();
+
     if (event.button === 0){
         if (component != null){
             component.onClick();
