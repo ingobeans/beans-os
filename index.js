@@ -242,16 +242,10 @@ class Program{
         this.components.push(component);
     }
     resize(width,height){
-        if (width == this.width && height == this.height){
-            return;
-        }
-        if (width < this.minWidth && height < this.minHeight){
-            return;
-        }
         if (width < this.minWidth){
             width = this.minWidth;
         }
-        else if (height < this.minHeight){
+        if (height < this.minHeight){
             height = this.minHeight;
         }
         this.width = width;
@@ -339,11 +333,13 @@ function update() {
         else if (resizeDirection == "e-resize" || resizeDirection == "w-resize"){
             differenceY = 0;
         }
-
         if (resizeDirection == "n-resize" || resizeDirection == "w-resize" || resizeDirection == "nw-resize"){
             differenceX *= -1;
             differenceY *= -1;
-
+        }
+        
+        resizeActiveProgram.resize(resizeStartWidth + differenceX, resizeStartHeight + differenceY);
+        if (resizeDirection == "n-resize" || resizeDirection == "w-resize" || resizeDirection == "nw-resize"){
             offsetX = differenceX;
             offsetY = differenceY;
 
@@ -358,7 +354,6 @@ function update() {
             resizeActiveProgram.y = resizeStartProgramY - offsetY;
         }
         
-        resizeActiveProgram.resize(resizeStartWidth + differenceX, resizeStartHeight + differenceY);
     }
 
     for (let index = 0; index < taskbarPrograms.length; index++) {
