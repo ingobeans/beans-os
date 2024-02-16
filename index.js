@@ -10,6 +10,9 @@ windowBackgroundColor = "#9c9c9c";
 windowBarColor = "#6d6d6d";
 taskbarColor = "#131E16";
 
+homeIcon = new Image();
+homeIcon.src = "assets/home.png"
+
 taskbarHeight = 48;
 windowBarHeight = 24;
 windowBarButtonWidth = 24;
@@ -142,18 +145,25 @@ class Topbar extends Label{
 }
 
 class Program{
-    constructor(name){
+    constructor(name,icon){
         this.name = name;
         this.width = 500;
         this.height = 328;
         this.x = canvas.width / 2 - this.width / 2;
         this.y = canvas.height / 2 - this.height / 2;
+        this.minimized = false;
+        this.preMinimizedPosX = 0
+        this.preMinimizedPosY = 0
         this.components = [];
         
         // components for top bar:
         this.addComponent(new Button(this.width - windowBarButtonWidth * 2, -windowBarHeight, windowBarButtonWidth, windowBarHeight, this.minimize, windowBarColor," -"));
         this.addComponent(new Button(this.width - windowBarButtonWidth, -windowBarHeight, windowBarButtonWidth, windowBarHeight, this.exit, "#ff0000"," X"));
         this.addComponent(new Topbar(0, -windowBarHeight, this.width, windowBarHeight, "#ffffff", windowBarColor, this.name));
+
+        this.iconSrc = icon;
+        this.icon = new Image();
+        this.icon.src = this.iconSrc;
     }
     exit(){
         for (let index = this.parent.components.length - 1; index >= 0; index--) {
@@ -161,15 +171,29 @@ class Program{
             component.exitHover();
         }
         selectedProgram = null;
-        programs.splice(programs.indexOf(this.parent,1));
+
+        console.log("removing " + this.parent.name);
+        console.log("removing " + this.parent.name);
+
+        programs.splice(programs.indexOf(this.parent),1);
+        taskbarPrograms.splice(taskbarPrograms.indexOf(this.parent),1);
+    }
+    maximize(){
+        this.minimized = false;
+        this.x = this.preMinimizedPosX;
+        this.y = this.preMinimizedPosY;
     }
     minimize(){
-        for (let index = this.parent.components.length - 1; index >= 0; index--) {
+        for (let index = 0; index < this.parent.components.length; index++) {
             const component = this.parent.components[index];
             component.exitHover();
         }
+        this.parent.preMinimizedPosX = this.parent.x;
+        this.parent.preMinimizedPosY = this.parent.y;
+
         this.parent.y = canvas.height * 2;
         selectedProgram = null;
+        this.parent.minimized = true;
     }
     drawRect(x, y, width, height, color){
         drawRect(x + this.x, y + this.y, width, height, color);
@@ -177,6 +201,9 @@ class Program{
     }
     drawText(x, y, text, color){
         drawText(x + this.x, y + this.y, text, color);
+    }
+    drawSprite(x, y, width, height, image) {
+        drawSprite(x + this.x, y + this.y, width, height, image);
     }
     addComponent(component){
         component.parent = this;
@@ -207,41 +234,65 @@ class Program{
 
 class TestApp extends Program{
     constructor(){
-        super("Testing App");
+        super("Testing App","assets/testingapp.png");
         this.onOpen();
     }
     testButton(){
         this.parent.presses += 1;
         this.parent.textLabel.text = "Presses: " + this.parent.presses.toString();
     }
-    update(){
-        super.update();
-        this.wa += 1;
-        this.textLabel2.text = "Wa: " + this.wa.toString();
-    }
     onOpen(){
         this.textLabel = new Label(0,80,90,40,"#ffffff",windowBackgroundColor,"Presses: 0");
-        this.textLabel2 = new Label(0,160,90,40,"#ffffff",windowBackgroundColor,"Wa: 0");
         this.presses = 0;
-        this.wa = 0;
+
         this.addComponent(this.textLabel);
-        this.addComponent(this.textLabel2);
         this.addComponent(new Button(0,0,40,40,this.testButton,"#333333","Test"))
     }
 }
 
-var allPrograms = [new TestApp()];
+class TestApp2 extends Program{
+    constructor(){
+        super("Testing App 2","assets/testingapp2.png");
+        this.onOpen();
+    }
+    onOpen(){
+        this.textLabel = new Label(0,80,90,40,"#ffffff",windowBackgroundColor,"howdy world");
+        this.addComponent(this.textLabel);
+    }
+}
+
+var allPrograms = [new TestApp(), new TestApp(), new TestApp2()];
+
 var programs = allPrograms;
+var taskbarPrograms = [...programs];
+// an identical list to programs of value
+// but isnt reordered whenever you select a program
+// so that the programs dont move in the taskbar whenever you select a new program
+
 var selectedProgram = programs[0];
 
 function update() {
     clearScreen(wallpaperColor);
-    drawRect(0, canvas.height - taskbarHeight, canvas.width, taskbarHeight, taskbarColor)
 
-    for (let index = 0; index < programs.length; index++) {
+    // draw taskbar
+    drawRect(0, canvas.height - taskbarHeight, canvas.width, taskbarHeight, taskbarColor);
+    drawSprite(5, canvas.height - taskbarHeight + 4,40,40,homeIcon);
+
+    for (let index = programs.length - 1; index >= 0; index--) {
         const program = programs[index];
         program.draw();
     }
+
+    for (let index = 0; index < taskbarPrograms.length; index++) {
+        const program = taskbarPrograms[index];
+
+        // draw taskbar icon
+        drawSprite(index * 60 + 65, canvas.height - taskbarHeight + 4,40,40,program.icon);
+        if (selectedProgram == program){
+            drawRect(index * 60 + 65, canvas.height - taskbarHeight + 4, 8, 8, "#ff0000")
+        }
+    }
+    
     if (selectedProgram != null){
         selectedProgram.update();
         drawText(20,20,selectedProgram.name,"#ffffff"); // for debug, write the name of the selected program
@@ -263,6 +314,10 @@ function drawRect(x, y, width, height, color) {
 function drawText(x, y, text, color){
     ctx.fillStyle = color;
     ctx.fillText(text, x, y+16);
+}
+
+function drawSprite(x, y, width, height, image) {
+    ctx.drawImage(image, x, y, width, height);
 }
 
 function handleMouseMove(event){
@@ -326,17 +381,59 @@ function getHoveredProgram(){
     return null;
 }
 
+function getHoveredTaskbarIcon(){
+    for (let index = 0; index < taskbarPrograms.length; index++) {
+        const program = taskbarPrograms[index];
+        if (
+            mouseX >= index * 60 + 65 &&
+            mouseX < index * 60 + 65 + 40
+        ){
+            return program;
+        }
+    }
+    return null;
+}
+
+function moveElementToStart(index) {
+    if (Array.isArray(programs) && index >= 0 && index < programs.length) {
+      const elementToMove = programs.splice(index, 1)[0];
+      programs.unshift(elementToMove);
+    } else {
+      console.error("Invalid index or 'programs' is not an array");
+    }
+}
+
+function selectProgram(program){
+    selectedProgram = program;
+    moveElementToStart(programs.indexOf(program));
+}
+
 function handleMouseDown(event) {
     mouseX = event.clientX;
     mouseY = event.clientY;
 
-    selectedProgram = getHoveredProgram();
+    selectProgram(getHoveredProgram());
 
     var component = getHoveredComponent();
 
     if (event.button === 0){
         if (component != null){
             component.onClick();
+        }else {
+            // this means we press somewhere on the desktop
+            // check for taskbar icon press
+
+            if (mouseY >= canvas.height - taskbarHeight){
+                // mouse in the taskbar area
+                var program = getHoveredTaskbarIcon();
+                if (program != null){
+                    selectProgram(program);
+                    
+                    if (program.minimized){
+                        program.maximize();
+                    }
+                }
+            }
         }
     } else if (event.button === 2){
 
