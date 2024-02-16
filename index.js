@@ -588,7 +588,8 @@ function handleMouseDown(event) {
                     }
                 }
             }
-        } else {
+        } 
+        if (!(mouseY >= canvas.height - taskbarHeight) || getHoveredTaskbarIcon() == null) {
             // check if a window corner is being clicked, to resize
             var result = getWindowCornerHovered();
             if (result[1] != null){
