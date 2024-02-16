@@ -34,6 +34,9 @@ class Component{
     exitHover(){
         
     }
+    onRelease(){
+        
+    }
     onClick(){
         
     }
@@ -245,6 +248,18 @@ function handleMouseDown(event) {
 
     }
 }
+function handleMouseUp(event) {
+    mouseX = event.clientX;
+    mouseY = event.clientY;
+    var component = getHoveredComponent();
+    if (event.button === 0){
+        if (component != null){
+            component.onRelease();
+        }
+    } else if (event.button === 2){
+
+    }
+}
 
 window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
@@ -256,5 +271,6 @@ window.addEventListener('resize', () => {
 
 canvas.addEventListener('mousemove', handleMouseMove, false);
 canvas.addEventListener('mousedown', handleMouseDown);
+canvas.addEventListener('mouseup', handleMouseUp);
 
 requestAnimationFrame(update);
