@@ -159,13 +159,24 @@ class Program{
         this.components = [];
         
         // components for top bar:
-        this.addComponent(new Button(this.width - topbarButtonWidth * 2, -topbarHeight, topbarButtonWidth, topbarHeight, this.minimize, windowBarColor," -"));
-        this.addComponent(new Button(this.width - topbarButtonWidth, -topbarHeight, topbarButtonWidth, topbarHeight, this.exit, "#ff0000"," X"));
-        this.addComponent(new Topbar(0, -topbarHeight, this.width, topbarHeight, "#ffffff", windowBarColor, this.name));
+        this.addTopbar()
 
         this.iconSrc = icon;
         this.icon = new Image();
         this.icon.src = this.iconSrc;
+    }
+    addTopbar(){
+        var minimizeButton = new Button(this.width - topbarButtonWidth * 2, -topbarHeight, topbarButtonWidth, topbarHeight, this.minimize, windowBarColor," -");
+        minimizeButton.parent = this;
+        
+        var exitButton = new Button(this.width - topbarButtonWidth, -topbarHeight, topbarButtonWidth, topbarHeight, this.exit, "#ff0000"," X");
+        exitButton.parent = this;
+        
+        var topbar = new Topbar(0, -topbarHeight, this.width, topbarHeight, "#ffffff", windowBarColor, this.name);
+        topbar.parent = this;
+        
+
+        this.components.splice(0,3,minimizeButton,exitButton,topbar)
     }
     exit(){
         for (let index = this.parent.components.length - 1; index >= 0; index--) {
@@ -211,6 +222,11 @@ class Program{
         component.parent = this;
         this.components.push(component);
     }
+    resize(width,height){
+        this.width = width;
+        this.height = height;
+        this.addTopbar();
+    }
     update(){
         for (let index = this.components.length - 1; index >= 0; index--) {
             const component = this.components[index];
@@ -242,6 +258,7 @@ class TestApp extends Program{
     }
     testButton(){
         this.parent.presses += 1;
+        this.parent.resize(500+this.parent.presses*4,328);
         this.parent.textLabel.text = "Presses: " + this.parent.presses.toString();
     }
     onOpen(){
@@ -415,7 +432,12 @@ function handleMouseDown(event) {
     mouseX = event.clientX;
     mouseY = event.clientY;
 
-    selectProgram(getHoveredProgram());
+    hoveredProgram = getHoveredProgram()
+    if (hoveredProgram != null){
+        selectProgram(hoveredProgram);
+    }else {
+        selectedProgram = null;
+    }
 
     var component = getHoveredComponent();
 
@@ -430,10 +452,12 @@ function handleMouseDown(event) {
                 // mouse in the taskbar area
                 var program = getHoveredTaskbarIcon();
                 if (program != null){
-                    selectProgram(program);
-                    
-                    if (program.minimized){
-                        program.maximize();
+                    if (program != selectedProgram){
+                        selectProgram(program);
+                        
+                        if (program.minimized){
+                            program.maximize();
+                        }
                     }
                 }
             }
