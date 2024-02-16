@@ -197,6 +197,8 @@ class Program{
         this.minimized = false;
         this.x = this.preMinimizedPosX;
         this.y = this.preMinimizedPosY;
+        
+        updateHoveredComponents();
     }
     minimize(){
         for (let index = 0; index < this.parent.components.length; index++) {
