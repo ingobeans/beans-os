@@ -19,6 +19,7 @@ taskbarHeight = 48;
 topbarHeight = 24;
 topbarButtonWidth = 24;
 
+resizeWindowHoverSize = 4;
 resizingWindow = false;
 resizeStartX = 0;
 resizeStartY = 0;
@@ -432,50 +433,50 @@ function getWindowCornerHovered(){
     for (let index = 0; index < programs.length; index++) {
         const program = programs[index];
         if (
-            mouseY >= program.y + program.height - 2 &&
-            mouseY < program.y + program.height + 2 &&
-            mouseX >= program.x + program.width - 2 &&
-            mouseX < program.x + program.width + 2
+            mouseY >= program.y + program.height - resizeWindowHoverSize &&
+            mouseY < program.y + program.height + resizeWindowHoverSize &&
+            mouseX >= program.x + program.width - resizeWindowHoverSize &&
+            mouseX < program.x + program.width + resizeWindowHoverSize
         ){
             return ["se-resize",program];
         }
         else if (
             mouseY >= program.y - topbarHeight &&
             mouseY < program.y - topbarHeight + program.height &&
-            mouseX >= program.x + program.width - 2 &&
-            mouseX < program.x + program.width + 2
+            mouseX >= program.x + program.width - resizeWindowHoverSize &&
+            mouseX < program.x + program.width + resizeWindowHoverSize
         ){
             return ["e-resize",program];
         }
         else if (
-            mouseY >= program.y + program.height - 2 &&
-            mouseY < program.y + program.height + 2 &&
-            mouseX >= program.x - 2 &&
-            mouseX < program.x + program.width + 2
+            mouseY >= program.y + program.height - resizeWindowHoverSize &&
+            mouseY < program.y + program.height + resizeWindowHoverSize &&
+            mouseX >= program.x - resizeWindowHoverSize &&
+            mouseX < program.x + program.width + resizeWindowHoverSize
         ){
             return ["s-resize",program];
         }
         else if (
-            mouseY >= program.y - topbarHeight - 2 &&
-            mouseY < program.y - topbarHeight + 2 &&
-            mouseX >= program.x - 2 &&
-            mouseX < program.x + 2
+            mouseY >= program.y - topbarHeight - resizeWindowHoverSize &&
+            mouseY < program.y - topbarHeight + resizeWindowHoverSize &&
+            mouseX >= program.x - resizeWindowHoverSize &&
+            mouseX < program.x + resizeWindowHoverSize
         ){
             return ["nw-resize",program];
         }
         else if (
-            mouseY >= program.y - topbarHeight - 2 &&
-            mouseY < program.y - topbarHeight + 2 &&
-            mouseX >= program.x - 2 &&
-            mouseX < program.x + program.width + 2
+            mouseY >= program.y - topbarHeight - resizeWindowHoverSize &&
+            mouseY < program.y - topbarHeight + resizeWindowHoverSize &&
+            mouseX >= program.x - resizeWindowHoverSize &&
+            mouseX < program.x + program.width + resizeWindowHoverSize
         ){
             return ["n-resize",program];
         }
         else if (
             mouseY >= program.y - topbarHeight &&
             mouseY < program.y - topbarHeight + program.height &&
-            mouseX >= program.x - 2 &&
-            mouseX < program.x + 2
+            mouseX >= program.x - resizeWindowHoverSize &&
+            mouseX < program.x + resizeWindowHoverSize
         ){
             return ["w-resize",program];
         }
