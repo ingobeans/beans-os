@@ -179,6 +179,12 @@ class Program{
         this.icon = new Image();
         this.icon.src = this.iconSrc;
     }
+    onSelect(){
+
+    }
+    onSelectionLost(){
+
+    }
     addTopbar(){
         var minimizeButton = new Button(this.width - topbarButtonWidth * 2, -topbarHeight, topbarButtonWidth, topbarHeight, this.minimize, windowBarColor," -");
         minimizeButton.parent = this;
@@ -197,7 +203,7 @@ class Program{
             const component = this.parent.components[index];
             component.exitHover();
         }
-        selectedProgram = null;
+        selectProgram(null);;
 
         console.log("removing " + this.parent.name);
         console.log("removing " + this.parent.name);
@@ -223,7 +229,7 @@ class Program{
         this.parent.preMinimizedPosY = this.parent.y;
 
         this.parent.y = canvas.height * 2;
-        selectedProgram = null;
+        selectProgram(null);;
         this.parent.minimized = true;
 
         updateHoveredComponents();
@@ -279,7 +285,7 @@ class Program{
 
 class TestApp extends Program{
     constructor(){
-        super("Testing App","assets/testingapp.png");
+        super("Testing App","assets/testingapp.png", true);
         this.onOpen();
     }
     testButton(){
@@ -298,14 +304,22 @@ class TestApp extends Program{
 
 class TestApp2 extends Program{
     constructor(){
-        super("Testing App 2","assets/testingapp2.png");
+        super("Testing App 2","assets/testingapp2.png", false);
         this.onOpen();
+    }
+    onSelectionLost(){
+        this.textLabel.text = "hey, stop ignoring me!";
+    }
+    onSelect(){
+        this.textLabel.text = "hello there!";
     }
     onOpen(){
         this.textLabel = new Label(0,80,90,40,"#ffffff",windowBackgroundColor,"howdy world");
         this.addComponent(this.textLabel);
     }
 }
+
+
 
 var allPrograms = [new TestApp(), new TestApp(), new TestApp2()];
 
@@ -432,6 +446,9 @@ function getWindowCornerHovered(){
 
     for (let index = 0; index < programs.length; index++) {
         const program = programs[index];
+        if (!program.resizable){
+            continue;
+        }
         if (
             mouseY >= program.y + program.height - resizeWindowHoverSize &&
             mouseY < program.y + program.height + resizeWindowHoverSize &&
@@ -555,8 +572,17 @@ function moveElementToStart(index) {
 }
 
 function selectProgram(program){
+    if (selectedProgram == program){
+        return;
+    }
+    if (selectedProgram != null){
+        selectedProgram.onSelectionLost();
+    }
     selectedProgram = program;
-    moveElementToStart(programs.indexOf(program));
+    if (program != null){
+        moveElementToStart(programs.indexOf(program));
+        program.onSelect();
+    }
 }
 
 function handleMouseDown(event) {
@@ -568,7 +594,7 @@ function handleMouseDown(event) {
     if (hoveredProgram != null){
         selectProgram(hoveredProgram);
     }else {
-        selectedProgram = null;
+        selectProgram(null);;
     }
 
     var component = getHoveredComponent();
