@@ -172,6 +172,7 @@ class Program{
         this.preMinimizedPosX = 0;
         this.preMinimizedPosY = 0;
         this.components = [];
+        this.parent = this;
         
         if (this.hasTopbar){
             this.addTopbar();
@@ -228,7 +229,7 @@ class Program{
         this.parent.preMinimizedPosY = this.parent.y;
 
         this.parent.y = canvas.height * 2;
-        selectProgram(null);;
+        selectProgram(null, true);
         this.parent.minimized = true;
 
         updateHoveredComponents();
@@ -324,7 +325,25 @@ class TestApp2 extends Program{
     }
 }
 
-var allPrograms = [new TestApp(), new TestApp(), new TestApp2()];
+class AppMenu extends Program{
+    constructor(){
+        super("App Menu","assets/home.png", false, false);
+        this.width = 100;
+        this.height = 200;
+        this.minimized = true;
+        this.preMinimizedPosX = 0;
+        this.preMinimizedPosY = canvas.height - this.height - taskbarHeight;
+        this.x = 0;
+        this.y = canvas.height * 2;
+        this.onOpen();
+    }
+    onSelectionLost(){
+        this.minimize();
+    }
+
+}
+
+var allPrograms = [new AppMenu(), new TestApp(), new TestApp(), new TestApp2()];
 
 var programs = allPrograms;
 var taskbarPrograms = [...programs];
@@ -332,14 +351,13 @@ var taskbarPrograms = [...programs];
 // but isnt reordered whenever you select a program
 // so that the programs dont move in the taskbar whenever you select a new program
 
-var selectedProgram = programs[0];
+var selectedProgram = null;
 
 function update() {
     clearScreen(wallpaperColor);
 
     // draw taskbar
     drawRect(0, canvas.height - taskbarHeight, canvas.width, taskbarHeight, taskbarColor);
-    drawSprite(5, canvas.height - taskbarHeight + 4,40,40,homeIcon);
 
     if (resizingWindow){
         var differenceX = mouseX - resizeStartX;
@@ -378,9 +396,9 @@ function update() {
         const program = taskbarPrograms[index];
 
         // draw taskbar icon
-        drawSprite(index * 60 + 65, canvas.height - taskbarHeight + 4,40,40,program.icon);
+        drawSprite(index * 60 + 5, canvas.height - taskbarHeight + 4,40,40,program.icon);
         if (selectedProgram == program){
-            drawRect(index * 60 + 65, canvas.height - taskbarHeight + 4, 8, 8, "#ff0000")
+            drawRect(index * 60 + 5, canvas.height - taskbarHeight + 4, 8, 8, "#ff0000")
         }
     }
 
@@ -460,10 +478,10 @@ function getWindowCornerHovered() {
         }
 
         const topbarOffset = program.hasTopbar ? topbarHeight : 0;
-        const nearBottom = isInRange(mouseY, program.y + program.height - resizeWindowHoverSize, program.y + program.height + resizeWindowHoverSize);
-        const nearRight = isInRange(mouseX, program.x + program.width - resizeWindowHoverSize, program.x + program.width + resizeWindowHoverSize);
-        const nearTop = isInRange(mouseY, program.y - topbarOffset - resizeWindowHoverSize, program.y - topbarOffset + resizeWindowHoverSize);
-        const nearLeft = isInRange(mouseX, program.x - resizeWindowHoverSize, program.x + resizeWindowHoverSize);
+        const nearBottom = isInRange(mouseY, program.y + program.height - resizeWindowHoverSize, program.y + program.height + resizeWindowHoverSize) && isInRange(mouseX, program.x - resizeWindowHoverSize, program.x + program.width + resizeWindowHoverSize);
+        const nearRight = isInRange(mouseX, program.x + program.width - resizeWindowHoverSize, program.x + program.width + resizeWindowHoverSize) && isInRange(mouseY, program.y - topbarOffset - resizeWindowHoverSize, program.y + program.height + resizeWindowHoverSize);
+        const nearTop = isInRange(mouseY, program.y - topbarOffset - resizeWindowHoverSize, program.y - topbarOffset + resizeWindowHoverSize) && isInRange(mouseX, program.x - resizeWindowHoverSize, program.x + program.width + resizeWindowHoverSize);
+        const nearLeft = isInRange(mouseX, program.x - resizeWindowHoverSize, program.x + resizeWindowHoverSize) && isInRange(mouseY, program.y - topbarOffset - resizeWindowHoverSize, program.y + program.height + resizeWindowHoverSize);
 
         if (nearBottom && nearRight) {
             return ["se-resize", program];
@@ -535,8 +553,8 @@ function getHoveredTaskbarIcon(){
     for (let index = 0; index < taskbarPrograms.length; index++) {
         const program = taskbarPrograms[index];
         if (
-            mouseX >= index * 60 + 65 &&
-            mouseX < index * 60 + 65 + 40
+            mouseX >= index * 60 + 5 &&
+            mouseX < index * 60 + 5 + 40
         ){
             return program;
         }
@@ -553,11 +571,11 @@ function moveElementToStart(index) {
     }
 }
 
-function selectProgram(program){
+function selectProgram(program,skipCallingOnSelectionLost = false){
     if (selectedProgram == program){
         return;
     }
-    if (selectedProgram != null){
+    if (selectedProgram != null && !skipCallingOnSelectionLost){
         selectedProgram.onSelectionLost();
     }
     selectedProgram = program;
