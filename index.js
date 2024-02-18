@@ -335,12 +335,20 @@ class AppMenu extends Program{
         this.preMinimizedPosY = canvas.height - this.height - taskbarHeight;
         this.x = 0;
         this.y = canvas.height * 2;
-        this.onOpen();
     }
     onSelectionLost(){
         this.minimize();
     }
-
+    onProgramClicked(){
+        console.log("pressed program " + this.text);
+    }
+    onSelect(){
+        this.components = [];
+        for (let index = 0; index < allPrograms.length; index++) {
+            const program = allPrograms[index];
+            this.addComponent(new Button(0,index*24,this.width,24,this.onProgramClicked,windowBackgroundColor,program.name));
+        }
+    }
 }
 
 var allPrograms = [new AppMenu(), new TestApp(), new TestApp(), new TestApp2()];
