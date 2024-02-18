@@ -340,20 +340,29 @@ class AppMenu extends Program{
         this.minimize();
     }
     onProgramClicked(){
-        console.log("pressed program " + this.text);
+        launchProgram(this.programClass);
     }
     onSelect(){
         this.components = [];
         for (let index = 0; index < allPrograms.length; index++) {
             const program = allPrograms[index];
-            this.addComponent(new Button(0,index*24,this.width,24,this.onProgramClicked,windowBackgroundColor,program.name));
+            var button = new Button(0,index * 24, this.width,24,this.onProgramClicked,windowBackgroundColor,program.name);
+            button.programClass = program;
+            this.addComponent(button);
         }
     }
 }
 
-var allPrograms = [new AppMenu(), new TestApp(), new TestApp(), new TestApp2()];
+function launchProgram(program){
+    var programInstance = new program();
+    programs.unshift(programInstance);
+    taskbarPrograms.push(programInstance);
+    selectProgram(programInstance);
+}
 
-var programs = allPrograms;
+var allPrograms = [TestApp, TestApp2];
+
+var programs = [new AppMenu()];
 var taskbarPrograms = [...programs];
 // an identical list to programs of value
 // but isnt reordered whenever you select a program
