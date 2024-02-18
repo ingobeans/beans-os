@@ -440,69 +440,41 @@ function updateHoveredComponents(){
     }
 }
 
-function getWindowCornerHovered(){
-    // function to return which windows corner is being hovered and which corner
-    // used for resizing of windows
+function isInRange(value, min, max) {
+    return value >= min && value < max;
+}
 
-    // please tell me there's a better way to do this
-    // please
-
+function getWindowCornerHovered() {
+    var hoveredProgram = getHoveredProgram();
+    
     for (let index = 0; index < programs.length; index++) {
         const program = programs[index];
-        if (!program.resizable){
+        if (!program.resizable) continue;
+        if (hoveredProgram != null && program != hoveredProgram){
             continue;
         }
-        topbarOffset = program.hasTopbar ? topbarHeight : 0;
-        if (
-            mouseY >= program.y + program.height - resizeWindowHoverSize &&
-            mouseY < program.y + program.height + resizeWindowHoverSize &&
-            mouseX >= program.x + program.width - resizeWindowHoverSize &&
-            mouseX < program.x + program.width + resizeWindowHoverSize
-        ){
-            return ["se-resize",program];
-        }
-        else if (
-            mouseY >= program.y - topbarOffset &&
-            mouseY < program.y - topbarOffset + program.height &&
-            mouseX >= program.x + program.width - resizeWindowHoverSize &&
-            mouseX < program.x + program.width + resizeWindowHoverSize
-        ){
-            return ["e-resize",program];
-        }
-        else if (
-            mouseY >= program.y + program.height - resizeWindowHoverSize &&
-            mouseY < program.y + program.height + resizeWindowHoverSize &&
-            mouseX >= program.x - resizeWindowHoverSize &&
-            mouseX < program.x + program.width + resizeWindowHoverSize
-        ){
-            return ["s-resize",program];
-        }
-        else if (
-            mouseY >= program.y - topbarOffset - resizeWindowHoverSize &&
-            mouseY < program.y - topbarOffset + resizeWindowHoverSize &&
-            mouseX >= program.x - resizeWindowHoverSize &&
-            mouseX < program.x + resizeWindowHoverSize
-        ){
-            return ["nw-resize",program];
-        }
-        else if (
-            mouseY >= program.y - topbarOffset - resizeWindowHoverSize &&
-            mouseY < program.y - topbarOffset + resizeWindowHoverSize &&
-            mouseX >= program.x - resizeWindowHoverSize &&
-            mouseX < program.x + program.width + resizeWindowHoverSize
-        ){
-            return ["n-resize",program];
-        }
-        else if (
-            mouseY >= program.y - topbarOffset &&
-            mouseY < program.y - topbarOffset + program.height &&
-            mouseX >= program.x - resizeWindowHoverSize &&
-            mouseX < program.x + resizeWindowHoverSize
-        ){
-            return ["w-resize",program];
+
+        const topbarOffset = program.hasTopbar ? topbarHeight : 0;
+        const nearBottom = isInRange(mouseY, program.y + program.height - resizeWindowHoverSize, program.y + program.height + resizeWindowHoverSize);
+        const nearRight = isInRange(mouseX, program.x + program.width - resizeWindowHoverSize, program.x + program.width + resizeWindowHoverSize);
+        const nearTop = isInRange(mouseY, program.y - topbarOffset - resizeWindowHoverSize, program.y - topbarOffset + resizeWindowHoverSize);
+        const nearLeft = isInRange(mouseX, program.x - resizeWindowHoverSize, program.x + resizeWindowHoverSize);
+
+        if (nearBottom && nearRight) {
+            return ["se-resize", program];
+        } else if (!nearTop && nearRight) {
+            return ["e-resize", program];
+        } else if (nearBottom && !nearRight && !nearLeft) {
+            return ["s-resize", program];
+        } else if (nearTop && nearLeft) {
+            return ["nw-resize", program];
+        } else if (nearTop && !nearRight && !nearLeft) {
+            return ["n-resize", program];
+        } else if (!nearBottom && nearLeft) {
+            return ["w-resize", program];
         }
     }
-    return ["inherit",null];
+    return ["inherit", null];
 }
 
 function handleMouseMove(event){
@@ -541,10 +513,11 @@ function getHoveredComponent(){
 function getHoveredProgram(){
     for (let index = 0; index < programs.length; index++) {
         const program = programs[index];
+        var topbarOffset = program.hasTopbar ? topbarHeight : 0;
         if (
             mouseX >= program.x &&
             mouseX < program.x + program.width &&
-            mouseY >= program.y - topbarHeight &&
+            mouseY >= program.y - topbarOffset &&
             mouseY < program.y + program.height
         ){
             return program;
