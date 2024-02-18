@@ -19,6 +19,8 @@ taskbarHeight = 48;
 topbarHeight = 24;
 topbarButtonWidth = 24;
 
+currentCursor = "inherit";
+
 resizeWindowHoverSize = 4;
 resizingWindow = false;
 resizeStartX = 0;
@@ -88,11 +90,11 @@ class Button extends Component{
         this.hoveredColor = hoveredColor;
     }
     onHover(){
-        canvas.style.cursor = "pointer";
+        currentCursor = "pointer";
         this.hovered = true;
     }
     exitHover(){
-        canvas.style.cursor = "inherit";
+        currentCursor = "inherit";
         this.hovered = false;
     }
     draw(offsetX, offsetY){
@@ -433,6 +435,7 @@ function update() {
         drawText(20,20,selectedProgram.name,"#ffffff"); // for debug, write the name of the selected program
     }
     
+    canvas.style.cursor = currentCursor;
     requestAnimationFrame(update);
 }
 
@@ -525,12 +528,12 @@ function handleMouseMove(event){
     mouseX = event.clientX;
     mouseY = event.clientY;
     if (resizingWindow){
-        canvas.style.cursor = resizeDirection;
+        currentCursor = resizeDirection;
         return;
     }
     var cursor = getWindowCornerHovered()[0];
     
-    canvas.style.cursor = cursor;
+    currentCursor = cursor;
     updateHoveredComponents();
 }
 
