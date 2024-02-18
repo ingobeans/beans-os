@@ -417,8 +417,13 @@ function drawSprite(x, y, width, height, image) {
 }
 
 function updateHoveredComponents(){
+    var hoveredProgram = getHoveredProgram();
+
     for (let index = 0; index < programs.length; index++) {
         const program = programs[index];
+        if (hoveredProgram != null && program != hoveredProgram){
+            continue;
+        }
         for (let index = 0; index < program.components.length; index++) {
             const component = program.components[index];
             let x = component.x + program.x;
