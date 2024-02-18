@@ -80,19 +80,23 @@ class Component{
 }
 
 class Button extends Component{
-    constructor(x, y, width, height, onClickEvent, color, text) {
+    constructor(x, y, width, height, onClickEvent, color, text, hoveredColor = "#000000") {
         super(x, y, width, height, color);
         this.onClickEvent = onClickEvent;
         this.text = text;
+        this.hovered = false;
+        this.hoveredColor = hoveredColor;
     }
     onHover(){
         canvas.style.cursor = "pointer";
+        this.hovered = true;
     }
     exitHover(){
         canvas.style.cursor = "inherit";
+        this.hovered = false;
     }
     draw(offsetX, offsetY){
-        drawRect(this.x + offsetX, this.y + offsetY, this.width, this.height, this.color);
+        drawRect(this.x + offsetX, this.y + offsetY, this.width, this.height, this.hovered ? this.hoveredColor : this.color);
         drawText(this.x + offsetX, this.y + offsetY, this.text, "#ffffff");
     }
 }
