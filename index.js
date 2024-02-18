@@ -334,13 +334,7 @@ class TestApp2 extends Program{
 class AppMenu extends Program{
     constructor(){
         super("App Menu","assets/home.png", false, false);
-        this.width = 100;
-        this.height = 200;
-        this.minimized = true;
-        this.preMinimizedPosX = 0;
-        this.preMinimizedPosY = canvas.height - this.height - taskbarHeight;
-        this.x = 0;
-        this.y = canvas.height * 2;
+        this.reload()
     }
     onSelectionLost(){
         this.minimize();
@@ -357,10 +351,47 @@ class AppMenu extends Program{
             this.addComponent(button);
         }
     }
+    reload(){
+        this.width = 100;
+        this.height = allPrograms.length * 24 + 48;
+        this.minimized = true;
+        this.preMinimizedPosX = 0;
+        this.preMinimizedPosY = canvas.height - this.height - taskbarHeight;
+        this.x = 0;
+        this.y = canvas.height * 2;
+    }
+}
+
+function registerProgram(program){
+    allPrograms.push(program);
+    activeAppMenu.reload();
 }
 
 function launchProgram(program){
     var programInstance = new program();
+    var x = canvas.width / 2 - programInstance.width / 2;
+    var y = canvas.height / 2 - programInstance.height / 2;
+    var foundValid = false;
+
+    while (!foundValid){
+        var match = false;
+        for (let index = 0; index < programs.length; index++) {
+            const program = programs[index];
+            if (program.x == x && program.y == y){
+                match = true;
+            }
+        }
+        if (!match){
+            foundValid = true;
+            break;
+        }
+        x += 24;
+        y += 24;
+    }
+
+    programInstance.x = x;
+    programInstance.y = y;
+
     programs.unshift(programInstance);
     taskbarPrograms.push(programInstance);
     selectProgram(programInstance);
@@ -368,7 +399,8 @@ function launchProgram(program){
 
 var allPrograms = [TestApp, TestApp2];
 
-var programs = [new AppMenu()];
+activeAppMenu = new AppMenu();
+var programs = [activeAppMenu];
 var taskbarPrograms = [...programs];
 // an identical list to programs of value
 // but isnt reordered whenever you select a program
