@@ -158,7 +158,7 @@ class Topbar extends Label{
 }
 
 class Program{
-    constructor(name,icon,resizable){
+    constructor(name,icon,resizable,hasTopbar){
         this.name = name;
         this.width = 500;
         this.height = 328;
@@ -168,12 +168,14 @@ class Program{
         this.y = canvas.height / 2 - this.height / 2;
         this.resizable = resizable
         this.minimized = false;
-        this.preMinimizedPosX = 0
-        this.preMinimizedPosY = 0
+        this.hasTopbar = hasTopbar;
+        this.preMinimizedPosX = 0;
+        this.preMinimizedPosY = 0;
         this.components = [];
         
-        // components for top bar:
-        this.addTopbar()
+        if (this.hasTopbar){
+            this.addTopbar();
+        }
 
         this.iconSrc = icon;
         this.icon = new Image();
@@ -203,10 +205,7 @@ class Program{
             const component = this.parent.components[index];
             component.exitHover();
         }
-        selectProgram(null);;
-
-        console.log("removing " + this.parent.name);
-        console.log("removing " + this.parent.name);
+        selectProgram(null);
 
         programs.splice(programs.indexOf(this.parent),1);
         taskbarPrograms.splice(taskbarPrograms.indexOf(this.parent),1);
@@ -257,7 +256,10 @@ class Program{
         }
         this.width = width;
         this.height = height;
-        this.addTopbar();
+
+        if (this.hasTopbar){
+            this.addTopbar();
+        }
     }
     update(){
         for (let index = this.components.length - 1; index >= 0; index--) {
@@ -270,7 +272,10 @@ class Program{
         this.y = y;
     }
     draw(){
-        this.drawRect(- windowBorderWith, - windowBorderWith - topbarHeight, this.width + windowBorderWith * 2, this.height + windowBorderWith * 2 + topbarHeight, "#000000");
+        var topbarOffset = this.hasTopbar ? topbarHeight : 0;
+        this.drawRect(- windowBorderWith, - windowBorderWith - topbarOffset, this.width + windowBorderWith * 2, this.height + windowBorderWith * 2 + topbarOffset, "#000000");
+        // draw a slightly larger border if program has topbar, to include it
+
         this.drawRect(0, 0, this.width, this.height, windowBackgroundColor);
 
         for (let index = this.components.length - 1; index >= 0; index--) {
@@ -285,7 +290,7 @@ class Program{
 
 class TestApp extends Program{
     constructor(){
-        super("Testing App","assets/testingapp.png", true);
+        super("Testing App","assets/testingapp.png", true, true);
         this.onOpen();
     }
     testButton(){
@@ -304,7 +309,7 @@ class TestApp extends Program{
 
 class TestApp2 extends Program{
     constructor(){
-        super("Testing App 2","assets/testingapp2.png", false);
+        super("Testing App 2","assets/testingapp2.png", true, false);
         this.onOpen();
     }
     onSelectionLost(){
@@ -318,8 +323,6 @@ class TestApp2 extends Program{
         this.addComponent(this.textLabel);
     }
 }
-
-
 
 var allPrograms = [new TestApp(), new TestApp(), new TestApp2()];
 
@@ -449,6 +452,7 @@ function getWindowCornerHovered(){
         if (!program.resizable){
             continue;
         }
+        topbarOffset = program.hasTopbar ? topbarHeight : 0;
         if (
             mouseY >= program.y + program.height - resizeWindowHoverSize &&
             mouseY < program.y + program.height + resizeWindowHoverSize &&
@@ -458,8 +462,8 @@ function getWindowCornerHovered(){
             return ["se-resize",program];
         }
         else if (
-            mouseY >= program.y - topbarHeight &&
-            mouseY < program.y - topbarHeight + program.height &&
+            mouseY >= program.y - topbarOffset &&
+            mouseY < program.y - topbarOffset + program.height &&
             mouseX >= program.x + program.width - resizeWindowHoverSize &&
             mouseX < program.x + program.width + resizeWindowHoverSize
         ){
@@ -474,24 +478,24 @@ function getWindowCornerHovered(){
             return ["s-resize",program];
         }
         else if (
-            mouseY >= program.y - topbarHeight - resizeWindowHoverSize &&
-            mouseY < program.y - topbarHeight + resizeWindowHoverSize &&
+            mouseY >= program.y - topbarOffset - resizeWindowHoverSize &&
+            mouseY < program.y - topbarOffset + resizeWindowHoverSize &&
             mouseX >= program.x - resizeWindowHoverSize &&
             mouseX < program.x + resizeWindowHoverSize
         ){
             return ["nw-resize",program];
         }
         else if (
-            mouseY >= program.y - topbarHeight - resizeWindowHoverSize &&
-            mouseY < program.y - topbarHeight + resizeWindowHoverSize &&
+            mouseY >= program.y - topbarOffset - resizeWindowHoverSize &&
+            mouseY < program.y - topbarOffset + resizeWindowHoverSize &&
             mouseX >= program.x - resizeWindowHoverSize &&
             mouseX < program.x + program.width + resizeWindowHoverSize
         ){
             return ["n-resize",program];
         }
         else if (
-            mouseY >= program.y - topbarHeight &&
-            mouseY < program.y - topbarHeight + program.height &&
+            mouseY >= program.y - topbarOffset &&
+            mouseY < program.y - topbarOffset + program.height &&
             mouseX >= program.x - resizeWindowHoverSize &&
             mouseX < program.x + resizeWindowHoverSize
         ){
