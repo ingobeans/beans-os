@@ -442,7 +442,7 @@ function update() {
         if (selectedProgram == program){
             drawRect(taskbarPos[0] - 2, taskbarPos[1] - 4, 42, 48, taskbarIconBackgroundColor);
         }
-        
+
         // draw taskbar icon
         drawSprite(taskbarPos[0], taskbarPos[1],40,40,program.icon);
     }
@@ -484,9 +484,7 @@ function updateHoveredComponents(){
 
     for (let index = 0; index < programs.length; index++) {
         const program = programs[index];
-        if (hoveredProgram != null && program != hoveredProgram){
-            continue;
-        }
+        
         for (let index = 0; index < program.components.length; index++) {
             const component = program.components[index];
             let x = component.x + program.x;
@@ -497,10 +495,16 @@ function updateHoveredComponents(){
                 mouseX < x+component.width &&
                 mouseY >= y &&
                 mouseY < y+component.height
+
+                && !(hoveredProgram != null && program != hoveredProgram)
+                // only allow a component to be "hovered" if its program is the currently hovered
+                // this is so you cant trigger hover events through the body of another program
             ){
                 component.onHover();
                 component.hoverLast = true;
             }else if (component.hoverLast){
+                // still allow components to exit hover even if their program isnt currently hovered
+                // so that components still update when you leave their hover by moving cursor straight to another program
                 component.exitHover();
                 component.hoverLast = false;
             }
