@@ -53,6 +53,21 @@ class Component{
         this.hoverLast = false;
         this.parent = null;
     }
+    setParent(parent){
+        this.parent = parent;
+        if(this.onHoverEvent != null){
+            this.onHoverEvent = this.onHoverEvent.bind(parent);
+        }
+        if(this.onExitHoverEvent != null){
+            this.onExitHoverEvent = this.onExitHoverEvent.bind(parent);
+        }
+        if(this.onReleaseEvent != null){
+            this.onReleaseEvent = this.onReleaseEvent.bind(parent);
+        }
+        if(this.onClickEvent != null){
+            this.onClickEvent = this.onClickEvent.bind(parent);
+        }
+    }
     draw(offsetX, offsetY){
 
     }
@@ -61,22 +76,22 @@ class Component{
     }
     onHover(){
         if(this.onHoverEvent != null){
-            this.onHoverEvent();
+            this.onHoverEvent(this);
         }
     }
     exitHover(){
         if(this.onExitHoverEvent != null){
-            this.onExitHoverEvent();
+            this.onExitHoverEvent(this);
         }
     }
     onRelease(){
         if(this.onReleaseEvent != null){
-            this.onReleaseEvent();
+            this.onReleaseEvent(this);
         }
     }
     onClick(){
         if(this.onClickEvent != null){
-            this.onClickEvent();
+            this.onClickEvent(this);
         }
     }
 }
@@ -178,7 +193,6 @@ class Program{
         this.preMinimizedPosX = 0;
         this.preMinimizedPosY = 0;
         this.components = [];
-        this.parent = this;
         
         if (this.hasTopbar){
             this.addTopbar();
@@ -196,26 +210,26 @@ class Program{
     }
     addTopbar(){
         var minimizeButton = new Button(this.width - topbarButtonWidth * 2, -topbarHeight, topbarButtonWidth, topbarHeight, this.minimize, windowBarColor," -");
-        minimizeButton.parent = this;
+        minimizeButton.setParent(this);
         
         var exitButton = new Button(this.width - topbarButtonWidth, -topbarHeight, topbarButtonWidth, topbarHeight, this.exit, "#ff0000"," X");
-        exitButton.parent = this;
+        exitButton.setParent(this);
         
         var topbar = new Topbar(0, -topbarHeight, this.width, topbarHeight, "#ffffff", windowBarColor, this.name);
-        topbar.parent = this;
+        topbar.setParent(this);
         
 
         this.components.splice(0,3,minimizeButton,exitButton,topbar)
     }
     exit(){
-        for (let index = this.parent.components.length - 1; index >= 0; index--) {
-            const component = this.parent.components[index];
+        for (let index = this.components.length - 1; index >= 0; index--) {
+            const component = this.components[index];
             component.exitHover();
         }
         selectProgram(null);
 
-        programs.splice(programs.indexOf(this.parent),1);
-        taskbarPrograms.splice(taskbarPrograms.indexOf(this.parent),1);
+        programs.splice(programs.indexOf(this),1);
+        taskbarPrograms.splice(taskbarPrograms.indexOf(this),1);
 
         updateHoveredComponents();
     }
@@ -227,16 +241,16 @@ class Program{
         updateHoveredComponents();
     }
     minimize(){
-        for (let index = 0; index < this.parent.components.length; index++) {
-            const component = this.parent.components[index];
+        for (let index = 0; index < this.components.length; index++) {
+            const component = this.components[index];
             component.exitHover();
         }
-        this.parent.preMinimizedPosX = this.parent.x;
-        this.parent.preMinimizedPosY = this.parent.y;
+        this.preMinimizedPosX = this.x;
+        this.preMinimizedPosY = this.y;
 
-        this.parent.y = canvas.height * 2;
+        this.y = canvas.height * 2;
         selectProgram(null, true);
-        this.parent.minimized = true;
+        this.minimized = true;
 
         updateHoveredComponents();
     }
@@ -251,7 +265,7 @@ class Program{
         drawSprite(x + this.x, y + this.y, width, height, image);
     }
     addComponent(component){
-        component.parent = this;
+        component.setParent(this); 
         this.components.push(component);
     }
     resize(width,height){
@@ -295,42 +309,6 @@ class Program{
     }
 }
 
-class TestApp extends Program{
-    constructor(){
-        super("Testing App","assets/testingapp.png", true, true);
-        this.onOpen();
-    }
-    testButton(){
-        this.parent.presses += 1;
-        this.parent.resize(500+this.parent.presses*4,328);
-        this.parent.textLabel.text = "Presses: " + this.parent.presses.toString();
-    }
-    onOpen(){
-        this.textLabel = new Label(0,80,90,40,"#ffffff",windowBackgroundColor,"Presses: 0");
-        this.presses = 0;
-
-        this.addComponent(this.textLabel);
-        this.addComponent(new Button(0,0,40,40,this.testButton,"#333333","Test"))
-    }
-}
-
-class TestApp2 extends Program{
-    constructor(){
-        super("Testing App 2","assets/testingapp2.png", true, false);
-        this.onOpen();
-    }
-    onSelectionLost(){
-        this.textLabel.text = "hey, stop ignoring me!";
-    }
-    onSelect(){
-        this.textLabel.text = "hello there!";
-    }
-    onOpen(){
-        this.textLabel = new Label(0,80,90,40,"#ffffff",windowBackgroundColor,"howdy world");
-        this.addComponent(this.textLabel);
-    }
-}
-
 class AppMenu extends Program{
     constructor(){
         super("App Menu","assets/home.png", false, false);
@@ -339,8 +317,8 @@ class AppMenu extends Program{
     onSelectionLost(){
         this.minimize();
     }
-    onProgramClicked(){
-        launchProgram(this.programClass);
+    onProgramClicked(button){
+        launchProgram(button.programClass);
     }
     onSelect(){
         this.components = [];
@@ -397,7 +375,7 @@ function launchProgram(program){
     selectProgram(programInstance);
 }
 
-var allPrograms = [TestApp, TestApp2];
+var allPrograms = [];
 
 activeAppMenu = new AppMenu();
 var programs = [activeAppMenu];
@@ -464,7 +442,6 @@ function update() {
     
     if (selectedProgram != null){
         selectedProgram.update();
-        drawText(20,20,selectedProgram.name,"#ffffff"); // for debug, write the name of the selected program
     }
     
     canvas.style.cursor = currentCursor;
