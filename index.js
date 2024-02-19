@@ -326,11 +326,9 @@ class AppMenu extends Program{
     reload(){
         this.width = 204;
         this.height = allPrograms.length * 24 + 48;
-        this.minimized = true;
-        this.preMinimizedPosX = 0;
-        this.preMinimizedPosY = canvas.height - this.height - taskbarHeight;
         this.x = 0;
-        this.y = canvas.height * 2;
+        this.y = canvas.height - this.height - taskbarHeight;
+        this.minimize();
         this.components = [];
 
         for (let index = 0; index < allPrograms.length; index++) {
@@ -378,6 +376,8 @@ function launchProgram(program){
     programs.unshift(programInstance);
     taskbarPrograms.push(programInstance);
     selectProgram(programInstance);
+
+    return programInstance;
 }
 
 function getTaskbarIconPositionFromIndex(index){
@@ -387,14 +387,15 @@ function getTaskbarIconPositionFromIndex(index){
 var allPrograms = [];
 // all "installed" programs
 
-activeAppMenu = new AppMenu();
-var programs = [activeAppMenu];
+var programs = [];
 var taskbarPrograms = [...programs];
 // an identical list to programs of value
 // but isnt reordered whenever you select a program
 // so that the programs dont move in the taskbar whenever you select a new program
 
 var selectedProgram = null;
+
+activeAppMenu = launchProgram(AppMenu);
 
 function update() {
     clearScreen(wallpaperColor);
@@ -723,6 +724,7 @@ window.addEventListener('resize', () => {
     canvas.height = window.innerHeight;
     ctx.font = "16px IBM Plex Mono, monospace";
     clearScreen(wallpaperColor);
+    activeAppMenu.reload();
 });
 
 
