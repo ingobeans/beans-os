@@ -323,13 +323,7 @@ class AppMenu extends Program{
         launchProgram(button.programClass);
     }
     onSelect(){
-        this.components = [];
-        for (let index = 0; index < allPrograms.length; index++) {
-            const program = allPrograms[index];
-            var button = new Button(0,index * 24, this.width,24,this.onProgramClicked,windowBackgroundColor,program.name);
-            button.programClass = program;
-            this.addComponent(button);
-        }
+        
     }
     reload(){
         this.width = 204;
@@ -339,6 +333,13 @@ class AppMenu extends Program{
         this.preMinimizedPosY = canvas.height - this.height - taskbarHeight;
         this.x = 0;
         this.y = canvas.height * 2;
+        this.components = [];
+        for (let index = 0; index < allPrograms.length; index++) {
+            const program = allPrograms[index];
+            var button = new Button(0,index * 24, this.width,24,this.onProgramClicked,windowBackgroundColor,program.name);
+            button.programClass = program;
+            this.addComponent(button);
+        }
     }
 }
 
