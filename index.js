@@ -154,7 +154,8 @@ class Topbar extends Label{
     }
     draw(offsetX, offsetY){
         drawRect(this.x + offsetX, this.y + offsetY, this.width, this.height, this.backgroundColor);
-        drawText(this.x + offsetX, this.y + offsetY, this.text, this.color);
+        drawSprite(this.x + offsetX, this.y + offsetY, 24, 24, this.parent.icon);
+        drawText(this.x + offsetX + 26, this.y + offsetY, this.text, this.color);
     }
     update(){
         if (this.pressing){
@@ -330,7 +331,7 @@ class AppMenu extends Program{
         }
     }
     reload(){
-        this.width = 100;
+        this.width = 204;
         this.height = allPrograms.length * 24 + 48;
         this.minimized = true;
         this.preMinimizedPosX = 0;
