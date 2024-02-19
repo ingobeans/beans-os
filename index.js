@@ -3,6 +3,9 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+ctx.imageSmoothingEnabled = false;
+// dont anti alias images when upscaling
+
 wallpaperColor = "#20873F";
 document.body.style.backgroundColor = wallpaperColor;
 
@@ -116,6 +119,32 @@ class Button extends Component{
     draw(offsetX, offsetY){
         drawRect(this.x + offsetX, this.y + offsetY, this.width, this.height, this.hovered ? this.hoveredColor : this.color);
         drawText(this.x + offsetX, this.y + offsetY, this.text, "#ffffff");
+    }
+}
+
+class ImageButton extends Component{
+    constructor(x, y, width, height, onClickEvent, imageSrc, color = windowBackgroundColor,  hoveredColor = "#000000") {
+        super(x, y, width, height, color);
+        this.onClickEvent = onClickEvent;
+
+        this.imageSrc = imageSrc;
+        this.image = new Image();
+        this.image.src = this.imageSrc;
+
+        this.hovered = false;
+        this.hoveredColor = hoveredColor;
+    }
+    onHover(){
+        currentCursor = "pointer";
+        this.hovered = true;
+    }
+    exitHover(){
+        currentCursor = "inherit";
+        this.hovered = false;
+    }
+    draw(offsetX, offsetY){
+        drawRect(this.x + offsetX, this.y + offsetY, this.width, this.height, this.hovered ? this.hoveredColor : this.color);
+        drawSprite(this.x + offsetX, this.y + offsetY, this.width, this.height, this.image);
     }
 }
 
