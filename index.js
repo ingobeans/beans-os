@@ -318,12 +318,10 @@ class AppMenu extends Program{
     }
     onSelectionLost(){
         this.minimize();
+        // hide app menu when you click away
     }
     onProgramClicked(button){
         launchProgram(button.programClass);
-    }
-    onSelect(){
-        
     }
     reload(){
         this.width = 204;
@@ -334,10 +332,14 @@ class AppMenu extends Program{
         this.x = 0;
         this.y = canvas.height * 2;
         this.components = [];
+
         for (let index = 0; index < allPrograms.length; index++) {
             const program = allPrograms[index];
             var button = new Button(0,index * 24, this.width,24,this.onProgramClicked,windowBackgroundColor,program.name);
             button.programClass = program;
+            // define a new variable programClass of the button, to be the actual app's class
+            // this way, we can on button press get the class to be able to launch it
+
             this.addComponent(button);
         }
     }
@@ -437,10 +439,11 @@ function update() {
         const program = taskbarPrograms[index];
         var taskbarPos = getTaskbarIconPositionFromIndex(index); 
 
-        // draw taskbar icon
         if (selectedProgram == program){
-            drawRect(taskbarPos[0], taskbarPos[1], 40, 40, taskbarIconBackgroundColor);
+            drawRect(taskbarPos[0] - 2, taskbarPos[1] - 4, 42, 48, taskbarIconBackgroundColor);
         }
+        
+        // draw taskbar icon
         drawSprite(taskbarPos[0], taskbarPos[1],40,40,program.icon);
     }
 
