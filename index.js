@@ -9,7 +9,8 @@ document.body.style.backgroundColor = wallpaperColor;
 windowBackgroundColor = "#9c9c9c";
 windowBarColor = "#6d6d6d";
 windowBorderWith = 1;
-taskbarColor = "#131E16";
+taskbarColor = "#292929";
+taskbarIconBackgroundColor = "#161616";
 
 homeIcon = new Image();
 homeIcon.src = "assets/home.png"
@@ -376,7 +377,12 @@ function launchProgram(program){
     selectProgram(programInstance);
 }
 
+function getTaskbarIconPositionFromIndex(index){
+    return [index * 42 + 2, canvas.height - taskbarHeight + 4];
+}
+
 var allPrograms = [];
+// all "installed" programs
 
 activeAppMenu = new AppMenu();
 var programs = [activeAppMenu];
@@ -428,12 +434,13 @@ function update() {
 
     for (let index = 0; index < taskbarPrograms.length; index++) {
         const program = taskbarPrograms[index];
+        var taskbarPos = getTaskbarIconPositionFromIndex(index); 
 
         // draw taskbar icon
-        drawSprite(index * 60 + 5, canvas.height - taskbarHeight + 4,40,40,program.icon);
         if (selectedProgram == program){
-            drawRect(index * 60 + 5, canvas.height - taskbarHeight + 4, 8, 8, "#ff0000")
+            drawRect(taskbarPos[0], taskbarPos[1], 40, 40, taskbarIconBackgroundColor);
         }
+        drawSprite(taskbarPos[0], taskbarPos[1],40,40,program.icon);
     }
 
     for (let index = programs.length - 1; index >= 0; index--) {
@@ -586,9 +593,10 @@ function getHoveredProgram(){
 function getHoveredTaskbarIcon(){
     for (let index = 0; index < taskbarPrograms.length; index++) {
         const program = taskbarPrograms[index];
+        var taskbarPos = getTaskbarIconPositionFromIndex(index);
         if (
-            mouseX >= index * 60 + 5 &&
-            mouseX < index * 60 + 5 + 40
+            mouseX >= taskbarPos[0] &&
+            mouseX < taskbarPos[0] + 40 + 2
         ){
             return program;
         }
