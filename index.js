@@ -122,6 +122,32 @@ class Button extends Component{
     }
 }
 
+class PopButton extends Component{
+    // another style of button
+
+    constructor(x, y, width, height, onClickEvent, text) {
+        super(x, y, width, height, windowBackgroundColor);
+        this.onClickEvent = onClickEvent;
+        this.text = text;
+        this.hovered = false;
+    }
+    onHover(){
+        currentCursor = "pointer";
+        this.hovered = true;
+    }
+    exitHover(){
+        currentCursor = "inherit";
+        this.hovered = false;
+    }
+    draw(offsetX, offsetY){
+        // draw border
+        drawRect(this.x + offsetX, this.y + offsetY, this.width, this.height, "#000");
+
+        drawRect(this.x + offsetX + 1, this.y + offsetY + 1, this.width - 2, this.height - 2, this.hovered ? "#969696" : windowBackgroundColor);
+        drawText(this.x + offsetX, this.y + offsetY, this.text, "#ffffff");
+    }
+}
+
 class ImageButton extends Component{
     constructor(x, y, width, height, onClickEvent, imageSrc, color = windowBackgroundColor,  hoveredColor = "#000000") {
         super(x, y, width, height, color);
@@ -210,12 +236,12 @@ class Topbar extends Label{
 }
 
 class Program{
-    constructor(name,icon,resizable,hasTopbar){
+    constructor(name,icon,resizable,hasTopbar,width=500,height=328,minWidth=200,minHeight=128){
         this.name = name;
-        this.width = 500;
-        this.height = 328;
-        this.minWidth = 200;
-        this.minHeight = 128;
+        this.width = width;
+        this.height = height;
+        this.minWidth = minWidth;
+        this.minHeight = minHeight;
         this.x = canvas.width / 2 - this.width / 2;
         this.y = canvas.height / 2 - this.height / 2;
         this.resizable = resizable
