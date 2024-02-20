@@ -23,6 +23,10 @@ class BiscuitClicker extends Program{
         this.biscuitButton = new ImageButton(0,40,160,160,this.clickBiscuit,"assets/bisquitclicker.png",windowBackgroundColor,windowBackgroundColor)
         this.upgradeValueButton = new PopButton(this.width - 310, 0, 310, 45, this.upgradeValue, "$10 - Upgrade value / click");
         
+        this.upgradeValueButton.onResizeWindowEvent = function(button) {
+            button.x = this.width - 310;
+        }
+
         this.cash = 0;
         this.valuePerClick = 1;
         this.upgradeValueCost = 10
