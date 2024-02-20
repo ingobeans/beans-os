@@ -157,6 +157,19 @@ class PopButton extends Component{
     }
 }
 
+class Sprite extends Component{
+    constructor(x, y, width, height, imageSrc){
+        super(x,y,width,height,null);
+
+        this.imageSrc = imageSrc;
+        this.image = new Image();
+        this.image.src = this.imageSrc;
+    }
+    draw(offsetX, offsetY){
+        drawSprite(this.x + offsetX, this.y + offsetY, this.width, this.height, this.image);
+    }
+}
+
 class ImageButton extends Component{
     constructor(x, y, width, height, onClickEvent, imageSrc, color = windowBackgroundColor,  hoveredColor = "#000000") {
         super(x, y, width, height, color);
@@ -421,6 +434,7 @@ class AppMenu extends Program{
 function registerProgram(program){
     allPrograms.push(program);
     activeAppMenu.reload();
+    fileSystem.createFile("/beans/programs/"+program.name+".exe",program.name);
 }
 
 function launchProgram(program){
@@ -458,6 +472,11 @@ function launchProgram(program){
 function getTaskbarIconPositionFromIndex(index){
     return [index * 42 + 2, canvas.height - taskbarHeight + 4];
 }
+
+var fileSystem = new BeansFileSystem();
+fileSystem.createDirectory("/home");
+fileSystem.createDirectory("/beans");
+fileSystem.createDirectory("/beans/programs");
 
 var allPrograms = [];
 // all "installed" programs
@@ -542,6 +561,9 @@ function clearScreen(color) {
 }
 
 function drawRect(x, y, width, height, color) {
+    if (color == null){
+        return;
+    }
     ctx.fillStyle = color;
     ctx.fillRect(x, y, width, height);
 }
