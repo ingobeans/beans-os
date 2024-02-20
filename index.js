@@ -41,7 +41,7 @@ var mouseY = 0;
 
 ctx.font = "16px IBM Plex Mono, monospace";
 
-class Component{
+class Component {
     constructor(x, y, width, height, color) {
         this.x = x;
         this.y = y;
@@ -53,6 +53,7 @@ class Component{
         this.onExitHoverEvent = null;
         this.onClickEvent = null;
         this.onReleaseEvent = null;
+        this.onResizeWindowEvent = null;
 
         this.hoverLast = false;
         this.parent = null;
@@ -70,6 +71,14 @@ class Component{
         }
         if(this.onClickEvent != null){
             this.onClickEvent = this.onClickEvent.bind(parent);
+        }
+        if(this.onResizeWindowEvent != null){
+            this.onResizeWindowEvent = this.onResizeWindowEvent.bind(parent);
+        }
+    }
+    onResizeWindow(){
+        if(this.onResizeWindowEvent != null){
+            this.onResizeWindowEvent(this);
         }
     }
     draw(offsetX, offsetY){
@@ -207,6 +216,10 @@ class Topbar extends Label{
         this.startPressMouseY = 0;
         this.startPressWindowX = 0;
         this.startPressWindowY = 0;
+        this.onResizeWindowEvent = this.reload;
+    }
+    onResizeWindow(){
+        this.width = this.parent.width;
     }
     draw(offsetX, offsetY){
         drawRect(this.x + offsetX, this.y + offsetY, this.width, this.height, this.backgroundColor);
@@ -267,9 +280,15 @@ class Program{
     }
     addTopbar(){
         var minimizeButton = new Button(this.width - topbarButtonWidth * 2, -topbarHeight, topbarButtonWidth, topbarHeight, this.minimize, windowBarColor," -");
+        minimizeButton.onResizeWindowEvent = function(button) {
+            button.x = this.width - topbarButtonWidth * 2;
+        }
         minimizeButton.setParent(this);
         
         var exitButton = new Button(this.width - topbarButtonWidth, -topbarHeight, topbarButtonWidth, topbarHeight, this.exit, "#ff0000"," X");
+        exitButton.onResizeWindowEvent = function(button) {
+            button.x = this.width - topbarButtonWidth;
+        }
         exitButton.setParent(this);
         
         var topbar = new Topbar(0, -topbarHeight, this.width, topbarHeight, "#ffffff", windowBarColor, this.name);
@@ -335,12 +354,13 @@ class Program{
         this.width = width;
         this.height = height;
 
-        if (this.hasTopbar){
-            this.addTopbar();
+        for (let index = 0; index < this.components.length; index++) {
+            const component = this.components[index];
+            component.onResizeWindow();
         }
     }
     update(){
-        for (let index = this.components.length - 1; index >= 0; index--) {
+        for (let index = 0; index < this.components.length; index++) {
             const component = this.components[index];
             component.update();
         }
