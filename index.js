@@ -25,6 +25,11 @@ topbarButtonWidth = 24;
 
 currentCursor = "inherit";
 
+markColor = "#5967e6";
+markingDesktop = false;
+markingDesktopStartX = 0;
+markingDesktopStartY = 0;
+
 resizeWindowHoverSize = 4;
 resizingWindow = false;
 resizeStartX = 0;
@@ -217,6 +222,22 @@ class Label extends Component{
     }
 }
 
+class InputBox extends Component{
+    constructor(prompt){
+        super(0,0,220,128,windowBackgroundColor);
+    }
+    draw(offsetX, offsetY){
+        var x = offsetX + (this.parent.width - this.width) / 2;
+        var y = offsetY + (this.parent.height - this.height) / 2;
+        drawRect(x, y, this.width, this.height, "#000");
+        drawRect(x + 1, y + 1, this.width - 2, this.height - 2, this.color);
+        
+        
+        drawRect(x, y + this.height - 40, this.width, 40, "#000");
+        drawRect(x + 1, y + this.height - 39, this.width - 2, 38, this.color);
+    }
+}
+
 class Topbar extends Label{
     // a regular label but has mouse events to allow dragging the window
     constructor(x, y, width, height, textColor, backgroundColor, text){
@@ -394,6 +415,9 @@ class Program{
             component.draw(this.x, this.y);
         }
     }
+    onClick(){
+
+    }
     onOpen(){
         
     }
@@ -494,6 +518,10 @@ activeAppMenu = launchProgram(AppMenu);
 function update() {
     clearScreen(wallpaperColor);
 
+    if (markingDesktop){
+        drawRect(markingDesktopStartX, markingDesktopStartY, mouseX - markingDesktopStartX, mouseY - markingDesktopStartY, markColor);
+    }
+    
     // draw taskbar
     drawRect(0, canvas.height - taskbarHeight, canvas.width, taskbarHeight, taskbarColor);
 
@@ -550,6 +578,7 @@ function update() {
     if (selectedProgram != null){
         selectedProgram.update();
     }
+
     
     canvas.style.cursor = currentCursor;
     requestAnimationFrame(update);
@@ -740,9 +769,13 @@ function handleMouseDown(event) {
 
     hoveredProgram = getHoveredProgram()
     if (hoveredProgram != null){
-        selectProgram(hoveredProgram);
+        if (selectedProgram == hoveredProgram){
+            hoveredProgram.onClick();
+        } else {
+            selectProgram(hoveredProgram);
+        }
     }else {
-        selectProgram(null);;
+        selectProgram(null);
     }
 
     var component = getHoveredComponent();
@@ -786,11 +819,23 @@ function handleMouseDown(event) {
     } else if (event.button === 2){
 
     }
+
+    if (selectedProgram == null){
+        markingDesktop = true;
+        markingDesktopStartX = mouseX;
+        markingDesktopStartY = mouseY;
+    }
 }
 function handleMouseUp(event) {
     event.preventDefault();
     mouseX = event.clientX;
     mouseY = event.clientY;
+
+    if (markingDesktop){
+        markingDesktop = false;
+        markingDesktopStartX = 0;
+        markingDesktopStartY = 0;
+    }
 
     if (resizingWindow){
         resizingWindow = false;

@@ -2,29 +2,78 @@ class FileExplore extends Program{
     constructor(){
         super("File Explore","assets/fileexplore.png", true, true);
         this.path = "/";
+        this.selectedItemIndex = -1;
+        this.lastSelectedItemIndex = -1;
         this.reload();
     }
-    clickFolder(button){
-        this.path += button.actualPath + "/";
+    openFolder(button){
+        this.path = button.actualPath;
+        this.selectedItemIndex = -1;
         this.reload()
+    }
+    onClick(){
+        for (let index = 2; index < this.components.length; index++) {
+            const component = this.components[index];
+
+            if (component.hoveredColor){
+                // when we click the body of the program, loop through all components
+                // check if hoveredColor exists, to verify the program is a button
+                // and reset their color
+                component.color = null;
+                component.hoveredColor = null;
+            }
+        }
+        this.lastSelectedItemIndex = this.selectedItemIndex;
+        this.selectedItemIndex = -1;
+    }
+    clickItem(button){
+        if (this.lastSelectedItemIndex == button.index){
+            if (!button.isFile){
+                this.openFolder(button);
+                this.selectedItemIndex = -1;
+                return;
+            }
+        }
+        this.selectedItemIndex = button.index;
+        button.color = markColor;
+        button.hoveredColor = markColor;
+    }
+    goUpFolder(button){
+        this.path = fileSystem.getParentDirectory(this.path);
+        this.selectedItemIndex = -1;
+        this.reload();
+    }
+    addNavigationBar(){
+        this.addComponent(new PopButton(0,0,120,32,this.goUpFolder,"Go Up Folder"))
+        this.addComponent(new PopButton(120-1,0,130,32,null,"Create Folder"))
+        this.addComponent(new PopButton(120+130-2,0,110,32,null,"Create File"))
+        this.addComponent(new PopButton(120+130+110-3,0,60,32,null,"Rename"))
     }
     reload(){
         var contents = fileSystem.readDirectory(this.path);
+        this.name = "File Explore - " + this.path;
         this.components = []
         this.addTopbar();
+        this.addNavigationBar();
+        
         for (let index = 0; index < contents.length; index++) {
             const item = contents[index];
-            var text = "  "+item
+            var text = "  " + item;
             var isFile = fileSystem.isFile(this.path + item);
-            var button = new Button(0, index * 24, text.length * 10, 24, this.clickFolder, null, text, null);
-            button.actualPath = item;
-            this.addComponent(button);
-
+            var y = index * 24 + 36;
+            
+            var button = new Button(0, y, text.length * 10, 24, null, null, text, null);
+            button.onClickEvent = this.clickItem;
+            button.actualPath = this.path + item + "/";
+            button.isFile = isFile;
+            button.index = index;
+            
             if(!isFile){
-                this.addComponent(new Sprite(0, index * 24, 20, 20, "assets/fileexplore.png"));
+                this.addComponent(new Sprite(0, y, 20, 20, "assets/filetypes/folder.png"));
             }else{
-                this.addComponent(new Sprite(0, index * 24, 20, 20, "assets/file.png"));
+                this.addComponent(new Sprite(0, y, 20, 20, "assets/filetypes/unknown.png"));
             }
+            this.addComponent(button);
         }
     }
 }
