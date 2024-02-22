@@ -1,6 +1,6 @@
 class FileExplore extends Program{
     constructor(){
-        super("File Explore","assets/fileexplore.png", true, true);
+        super("File Explore","assets/fileexplore.png", true, true, 500, 328, 500, 200);
         this.path = "/";
         this.selectedItemIndex = -1;
         this.lastSelectedItemIndex = -1;
@@ -12,6 +12,7 @@ class FileExplore extends Program{
         this.reload()
     }
     onClick(){
+        super.onClick();
         for (let index = 2; index < this.components.length; index++) {
             const component = this.components[index];
 
@@ -47,7 +48,20 @@ class FileExplore extends Program{
         this.addComponent(new PopButton(0,0,120,32,this.goUpFolder,"Go Up Folder"))
         this.addComponent(new PopButton(120-1,0,130,32,null,"Create Folder"))
         this.addComponent(new PopButton(120+130-2,0,110,32,null,"Create File"))
-        this.addComponent(new PopButton(120+130+110-3,0,60,32,null,"Rename"))
+
+        var renameButton = new PopButton(120+130+110-3,0,this.width - 120 - 130 - 110 + 4,32,this.clickRename,"Rename");
+        renameButton.onResizeWindowEvent = function(button){
+            button.width = this.width - 120 - 130 - 110 + 4;
+        };
+        this.addComponent(renameButton);
+    }
+    clickRename(button){
+        var inputField = new Input(button.x, button.y, button.width, button.height, "New name...");
+        inputField.onResizeWindowEvent = function(field){
+            field.width = this.width - 120 - 130 - 110 + 4;
+        };
+        inputField.setParent(this);
+        this.components.splice(this.components.indexOf(button),1, inputField)
     }
     reload(){
         var contents = fileSystem.readDirectory(this.path);

@@ -222,19 +222,53 @@ class Label extends Component{
     }
 }
 
-class InputBox extends Component{
-    constructor(prompt){
-        super(0,0,220,128,windowBackgroundColor);
+class Input extends Component{
+    constructor(x, y, width, height, placeholder="", textColor="#fff", backgroundColor=windowBackgroundColor){
+        super(x,y,width,height,textColor);
+        this.backgroundColor = backgroundColor;
+        this.value = "";
+        this.submitted = false;
+        this.placeholder = placeholder;
+    }
+    onHover(){
+        currentCursor = "text";
+        this.hovered = true;
+    }
+    exitHover(){
+        currentCursor = "inherit";
+        this.hovered = false;
+    }
+    onClick(){
+        this.parent.selectedInputField = this;
+    }
+    onKeyPress(key){
+        if (this.submitted){
+            return;
+        }
+        if (key == "Backspace"){
+            this.value = this.value.substring(0, this.value.length - 1);
+        } else if (key == "Enter"){
+            this.submitted = true;
+            return;
+        }
+        else if (key.length == 1) {
+            this.value += key;
+        }
+    }
+    setParent(parent){
+        super.setParent(parent);
+        parent.selectedInputField = this;
     }
     draw(offsetX, offsetY){
-        var x = offsetX + (this.parent.width - this.width) / 2;
-        var y = offsetY + (this.parent.height - this.height) / 2;
+        var x = this.x + offsetX;
+        var y = this.y + offsetY;
         drawRect(x, y, this.width, this.height, "#000");
-        drawRect(x + 1, y + 1, this.width - 2, this.height - 2, this.color);
-        
-        
-        drawRect(x, y + this.height - 40, this.width, 40, "#000");
-        drawRect(x + 1, y + this.height - 39, this.width - 2, 38, this.color);
+        drawRect(x + 1, y + 1, this.width - 2, this.height - 2, this.backgroundColor);
+        if (this.value != ""){
+            drawText(x, y, this.value, this.color);
+        }else {
+            drawText(x, y, this.placeholder, "#bbb");
+        }
     }
 }
 
@@ -302,9 +336,15 @@ class Program{
             this.addTopbar();
         }
 
+        this.selectedInputField = null;
         this.iconSrc = icon;
         this.icon = new Image();
         this.icon.src = this.iconSrc;
+    }
+    onKeyPress(key){
+        if (this.selectedInputField != null){
+            this.selectedInputField.onKeyPress(key);
+        }
     }
     onSelect(){
 
@@ -416,7 +456,9 @@ class Program{
         }
     }
     onClick(){
-
+        if (this.selectedInputField != null){
+            this.selectedInputField = null;
+        }
     }
     onOpen(){
         
@@ -861,6 +903,12 @@ function handleMouseUp(event) {
     }
 }
 
+function handleKeyPress(event) {
+    if (selectedProgram != null){
+        selectedProgram.onKeyPress(event.key);
+    }
+}
+
 window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -869,7 +917,7 @@ window.addEventListener('resize', () => {
     activeAppMenu.reload();
 });
 
-
+document.addEventListener("keydown", handleKeyPress);
 canvas.addEventListener('mousemove', handleMouseMove, false);
 canvas.addEventListener('mousedown', handleMouseDown);
 canvas.addEventListener('mouseup', handleMouseUp);
