@@ -6,13 +6,16 @@ canvas.height = window.innerHeight;
 ctx.imageSmoothingEnabled = false;
 // dont anti alias images when upscaling
 
-wallpaperColor = "#20873F";
-document.body.style.backgroundColor = wallpaperColor;
+wallpaper = [
+    {offset: 0, color: 'rgb(204,84,131)'},
+    {offset: 1, color: 'rgb(255,175,148)'},
+];
+document.body.style.backgroundColor = wallpaper;
 
 windowBackgroundColor = "#9c9c9c";
 windowBarColor = "#6d6d6d";
 windowBorderWith = 1;
-taskbarColor = "#292929";
+taskbarColor = "rgb(41,41,41)";
 taskbarIconBackgroundColor = "#161616";
 
 homeIcon = new Image();
@@ -25,7 +28,7 @@ topbarButtonWidth = 24;
 
 currentCursor = "inherit";
 
-markColor = "#5967e6";
+markColor = "rgba(89,103,230,0.25)";
 markingDesktop = false;
 markingDesktopStartX = 0;
 markingDesktopStartY = 0;
@@ -406,7 +409,9 @@ class Program{
     }
     drawRect(x, y, width, height, color){
         drawRect(x + this.x, y + this.y, width, height, color);
-        drawRect(x + this.x, y + this.y, width, height, color);
+    }
+    drawGradientRect(x, y, width, height, colorStops){
+        drawGradientRect(x + this.x, y + this.y, width, height, colorStops);
     }
     drawText(x, y, text, color){
         drawText(x + this.x, y + this.y, text, color);
@@ -558,7 +563,7 @@ var selectedProgram = null;
 activeAppMenu = launchProgram(AppMenu);
 
 function update() {
-    clearScreen(wallpaperColor);
+    clearScreen();
 
     if (markingDesktop){
         drawRect(markingDesktopStartX, markingDesktopStartY, mouseX - markingDesktopStartX, mouseY - markingDesktopStartY, markColor);
@@ -626,9 +631,8 @@ function update() {
     requestAnimationFrame(update);
 }
 
-function clearScreen(color) {
-    ctx.fillStyle = color;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+function clearScreen() {
+    drawGradientRect(0,0,canvas.width,canvas.height,wallpaper);
 }
 
 function drawRect(x, y, width, height, color) {
@@ -636,6 +640,17 @@ function drawRect(x, y, width, height, color) {
         return;
     }
     ctx.fillStyle = color;
+    ctx.fillRect(x, y, width, height);
+}
+
+function drawGradientRect(x, y, width, height, colorStops) {
+    var gradient = ctx.createLinearGradient(x, y, x + width, y + height);
+
+    colorStops.forEach(function(colorStop) {
+        gradient.addColorStop(colorStop.offset, colorStop.color);
+    });
+    
+    ctx.fillStyle = gradient;
     ctx.fillRect(x, y, width, height);
 }
 
@@ -913,7 +928,7 @@ window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     ctx.font = "16px IBM Plex Mono, monospace";
-    clearScreen(wallpaperColor);
+    clearScreen();
     activeAppMenu.reload();
 });
 
