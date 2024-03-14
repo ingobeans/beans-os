@@ -1,7 +1,7 @@
 class FileExplore extends Program{
-    constructor(){
+    constructor(args="/"){
         super("File Explore","assets/fileexplore.png", true, true, 500, 328, 500, 200);
-        this.path = "/";
+        this.path = args;
         this.selectedItemIndex = -1;
         this.lastSelectedItemIndex = -1;
         this.reload();
@@ -56,12 +56,10 @@ class FileExplore extends Program{
         this.addComponent(renameButton);
     }
     clickRename(button){
-        var inputField = new Input(button.x, button.y, button.width, button.height, "New name...");
-        inputField.onResizeWindowEvent = function(field){
-            field.width = this.width - 120 - 130 - 110 + 4;
-        };
-        inputField.setParent(this);
-        this.components.splice(this.components.indexOf(button),1, inputField)
+        if (this.lastSelectedItemIndex == -1){
+            return;
+        }
+        this.sendInputBox("Rename...");
     }
     reload(){
         var contents = fileSystem.readDirectory(this.path);

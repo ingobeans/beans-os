@@ -226,12 +226,15 @@ class Label extends Component{
 }
 
 class Input extends Component{
-    constructor(x, y, width, height, placeholder="", textColor="#fff", backgroundColor=windowBackgroundColor){
+    constructor(x, y, width, height, placeholder="", allowEnterSend=false, textColor="#fff", backgroundColor=windowBackgroundColor){
         super(x,y,width,height,textColor);
         this.backgroundColor = backgroundColor;
         this.value = "";
         this.submitted = false;
         this.placeholder = placeholder;
+        this.allowEnterSend = allowEnterSend;
+        this.lineBlinkTimer = 30;
+        this.line = false;
     }
     onHover(){
         currentCursor = "text";
@@ -251,8 +254,10 @@ class Input extends Component{
         if (key == "Backspace"){
             this.value = this.value.substring(0, this.value.length - 1);
         } else if (key == "Enter"){
-            this.submitted = true;
-            return;
+            if (this.allowEnterSend){
+                this.submitted = true;
+                return;
+            }
         }
         else if (key.length == 1) {
             this.value += key;
@@ -271,6 +276,16 @@ class Input extends Component{
             drawText(x, y, this.value, this.color);
         }else {
             drawText(x, y, this.placeholder, "#bbb");
+        }
+        if (this.parent.selectedInputField == this){
+            this.lineBlinkTimer -= 1;
+            if (this.lineBlinkTimer <= 0){
+                this.lineBlinkTimer = 30;
+                this.line = !this.line;
+            }
+            if (this.line){
+                drawRect(x + this.value.length * 10, y + 3, 2, 17, this.color);
+            }
         }
     }
 }
@@ -438,6 +453,11 @@ class Program{
             component.onResizeWindow();
         }
     }
+    sendInputBox(prompt){
+        var inputBox = new InputBox(programs.indexOf(this).toString() + " " + prompt);
+        programs.unshift(inputBox);
+        selectProgram(inputBox);
+    }
     update(){
         for (let index = 0; index < this.components.length; index++) {
             const component = this.components[index];
@@ -499,6 +519,24 @@ class AppMenu extends Program{
 
             this.addComponent(button);
         }
+    }
+}
+
+class InputBox extends Program{
+    constructor(startArgs){
+        var launcherId = parseInt(startArgs.split(" ")[0]);
+        var text = startArgs.split(" ")[1];
+        var launcher = programs[launcherId];
+        super(text, launcher.iconSrc, false, true, 400, 150);
+        this.launcherId = launcherId;
+        this.text = text;
+        this.launcher = launcher;
+        this.input = new Input(this.width / 2 - 260 / 2, this.height / 2 - 40 / 2, 260, 40, this.text, false);
+        this.cancelButton = new PopButton(this.width - 130 - 10, this.height - 30 - 10, 130, 30, null, "   Cancel");
+        this.okButton = new PopButton(this.width - 130 - 10 - 129, this.height - 30 - 10, 130, 30, null, "     Ok");
+        this.addComponent(this.input);
+        this.addComponent(this.okButton);
+        this.addComponent(this.cancelButton);
     }
 }
 
