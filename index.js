@@ -364,6 +364,9 @@ class Program{
             this.selectedInputField.onKeyPress(key);
         }
     }
+    onInputBoxReceive(response){
+
+    }
     onSelect(){
 
     }
@@ -389,7 +392,7 @@ class Program{
 
         this.components.splice(0,3,minimizeButton,exitButton,topbar)
     }
-    exit(){
+    exit(includedInTaskbar = true){
         for (let index = this.components.length - 1; index >= 0; index--) {
             const component = this.components[index];
             component.exitHover();
@@ -397,7 +400,10 @@ class Program{
         selectProgram(null);
 
         programs.splice(programs.indexOf(this),1);
-        taskbarPrograms.splice(taskbarPrograms.indexOf(this),1);
+
+        if(includedInTaskbar){
+            taskbarPrograms.splice(taskbarPrograms.indexOf(this),1);
+        }
 
         updateHoveredComponents();
     }
@@ -532,11 +538,21 @@ class InputBox extends Program{
         this.text = text;
         this.launcher = launcher;
         this.input = new Input(this.width / 2 - 260 / 2, this.height / 2 - 40 / 2, 260, 40, this.text, false);
-        this.cancelButton = new PopButton(this.width - 130 - 10, this.height - 30 - 10, 130, 30, null, "   Cancel");
-        this.okButton = new PopButton(this.width - 130 - 10 - 129, this.height - 30 - 10, 130, 30, null, "     Ok");
+
+        this.cancelButton = new PopButton(this.width - 130 - 10, this.height - 30 - 10, 130, 30, this.sendCancel, "   Cancel");
+        this.okButton = new PopButton(this.width - 130 - 10 - 129, this.height - 30 - 10, 130, 30, this.sendResponse, "     Ok");
+
         this.addComponent(this.input);
         this.addComponent(this.okButton);
         this.addComponent(this.cancelButton);
+    }
+    sendCancel(){
+        this.launcher.onInputBoxReceive(false);
+        this.exit(false);
+    }
+    sendResponse(){
+        this.launcher.onInputBoxReceive(this.input.value);
+        this.exit(false);
     }
 }
 

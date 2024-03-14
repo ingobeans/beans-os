@@ -4,12 +4,30 @@ class FileExplore extends Program{
         this.path = args;
         this.selectedItemIndex = -1;
         this.lastSelectedItemIndex = -1;
+        this.renaming = false;
         this.reload();
     }
     openFolder(button){
         this.path = button.actualPath;
         this.selectedItemIndex = -1;
         this.reload()
+    }
+    onInputBoxReceive(response){
+        if (this.renaming == false){
+            return
+        }
+        if (response == false){
+            return
+        }
+        if (response.includes("/")){
+            return;
+        }
+        if (!fileSystem.isFile(this.path + this.renaming) && response.includes(".")){
+            return
+        }
+        console.log(this.path + this.renaming + "/");
+        fileSystem.rename(this.path + this.renaming, response);
+        this.reload();
     }
     onClick(){
         super.onClick();
@@ -59,10 +77,14 @@ class FileExplore extends Program{
         if (this.lastSelectedItemIndex == -1){
             return;
         }
+        this.renaming = this.contents[this.lastSelectedItemIndex];
+        this.selectedItemIndex = -1;
+        this.lastSelectedItemIndex = -1;
         this.sendInputBox("Rename...");
     }
     reload(){
         var contents = fileSystem.readDirectory(this.path);
+        this.contents = contents;
         this.name = "File Explore - " + this.path;
         this.components = []
         this.addTopbar();
@@ -74,7 +96,7 @@ class FileExplore extends Program{
             var isFile = fileSystem.isFile(this.path + item);
             var y = index * 24 + 36;
             
-            var button = new Button(0, y, text.length * 10, 24, null, null, text, null);
+            var button = new Button(0, y, this.width, 24, null, null, text, null);
             button.onClickEvent = this.clickItem;
             button.actualPath = this.path + item + "/";
             button.isFile = isFile;
