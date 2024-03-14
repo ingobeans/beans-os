@@ -5,6 +5,8 @@ class FileExplore extends Program{
         this.selectedItemIndex = -1;
         this.lastSelectedItemIndex = -1;
         this.renaming = false;
+        this.creatingFile = false;
+        this.creatingFolder = false;
         this.reload();
     }
     openFolder(button){
@@ -13,21 +15,45 @@ class FileExplore extends Program{
         this.reload()
     }
     onInputBoxReceive(response){
-        if (this.renaming == false){
-            return
+        if (this.renaming != false){
+            if (response == false){
+                return
+            }
+            this.renaming = false;
+            if (response.includes("/")){
+                return;
+            }
+            if (!fileSystem.isFile(this.path + this.renaming) && response.includes(".")){
+                return
+            }
+            console.log(this.path + this.renaming + "/");
+            fileSystem.rename(this.path + this.renaming, response);
+            this.reload();
+        } else if (this.creatingFolder){
+            this.creatingFolder = false;
+            if (response == false){
+                return
+            }
+            if (response.includes("/") || response.includes(".")){
+                return;
+            }
+            console.log(this.contents);
+            console.log(this.path + response);
+            fileSystem.createDirectory(this.path + response);
+            this.reload();
+        } else if (this.creatingFile){
+            this.creatingFile = false;
+            if (response == false){
+                return
+            }
+            if (response.includes("/")){
+                return;
+            }
+            console.log(this.contents);
+            console.log(this.path + response);
+            fileSystem.createFile(this.path + response);
+            this.reload();
         }
-        if (response == false){
-            return
-        }
-        if (response.includes("/")){
-            return;
-        }
-        if (!fileSystem.isFile(this.path + this.renaming) && response.includes(".")){
-            return
-        }
-        console.log(this.path + this.renaming + "/");
-        fileSystem.rename(this.path + this.renaming, response);
-        this.reload();
     }
     onClick(){
         super.onClick();
@@ -64,14 +90,26 @@ class FileExplore extends Program{
     }
     addNavigationBar(){
         this.addComponent(new PopButton(0,0,120,32,this.goUpFolder,"Go Up Folder"))
-        this.addComponent(new PopButton(120-1,0,130,32,null,"Create Folder"))
-        this.addComponent(new PopButton(120+130-2,0,110,32,null,"Create File"))
+        this.addComponent(new PopButton(120-1,0,130,32,this.clickCreateFolder,"Create Folder"))
+        this.addComponent(new PopButton(120+130-2,0,110,32,this.clickCreateFile,"Create File"))
 
         var renameButton = new PopButton(120+130+110-3,0,this.width - 120 - 130 - 110 + 4,32,this.clickRename,"Rename");
         renameButton.onResizeWindowEvent = function(button){
             button.width = this.width - 120 - 130 - 110 + 4;
         };
         this.addComponent(renameButton);
+    }
+    clickCreateFolder(button){
+        this.creatingFolder = true;
+        this.selectedItemIndex = -1;
+        this.lastSelectedItemIndex = -1;
+        this.sendInputBox("Create Folder...");
+    }
+    clickCreateFile(button){
+        this.creatingFile = true;
+        this.selectedItemIndex = -1;
+        this.lastSelectedItemIndex = -1;
+        this.sendInputBox("Create File...");
     }
     clickRename(button){
         if (this.lastSelectedItemIndex == -1){
