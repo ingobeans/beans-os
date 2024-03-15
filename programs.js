@@ -15,24 +15,25 @@ class FileExplore extends Program{
         this.reload()
     }
     onInputBoxReceive(response){
+        console.log(response);
         if (this.renaming != false){
             if (response == false){
-                return
+                return;
             }
-            this.renaming = false;
             if (response.includes("/")){
                 return;
             }
             if (!fileSystem.isFile(this.path + this.renaming) && response.includes(".")){
-                return
+                return;
             }
             console.log(this.path + this.renaming + "/");
             fileSystem.rename(this.path + this.renaming, response);
             this.reload();
+            this.renaming = false;
         } else if (this.creatingFolder){
             this.creatingFolder = false;
             if (response == false){
-                return
+                return;
             }
             if (response.includes("/") || response.includes(".")){
                 return;
@@ -44,7 +45,7 @@ class FileExplore extends Program{
         } else if (this.creatingFile){
             this.creatingFile = false;
             if (response == false){
-                return
+                return;
             }
             if (response.includes("/")){
                 return;

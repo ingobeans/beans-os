@@ -551,6 +551,7 @@ class InputBox extends Program{
         this.exit(false);
     }
     sendResponse(){
+        console.log(this.input.value);
         this.launcher.onInputBoxReceive(this.input.value);
         this.exit(false);
     }
