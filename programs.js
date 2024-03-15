@@ -121,6 +121,10 @@ class FileExplore extends Program{
         this.lastSelectedItemIndex = -1;
         this.sendInputBox("Rename...");
     }
+    resize(width,height){
+        super.resize(width,height);
+        this.reload();
+    }
     reload(){
         var contents = fileSystem.readDirectory(this.path);
         this.contents = contents;
